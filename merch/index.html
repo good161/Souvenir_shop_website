@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Сувенирная лавка ЧГУ</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <a href="../index.html" class="back-button">← На главную</a>
+        <button id="adminBtn" class="admin-button" title="Админ-панель">⚙️</button>
+        <button id="scrollTopBtn" class="scroll-button scroll-top" title="Наверх">↑</button>
+        <button id="scrollBottomBtn" class="scroll-button scroll-bottom" title="Вниз">↓</button>
+        <div class="shop-header">
+                    <h1>Сувенирная лавка ЧГУ</h1>
+                </div>
+        <div class="app-layout">
+            <section class="products-container">
+                
+                
+                <div class="controls-bar">
+                    <div class="search-wrapper">
+                        <input type="text" id="searchInput" placeholder="🔍 Поиск по названию..." class="search-input">
+                    </div>
+                    
+                    <div class="filter-sort-bar">
+                        <div class="category-filters">
+                            <button class="cat-btn active" data-category="all">Все товары</button>
+                            <button class="cat-btn" data-category="Одежда">Одежда</button>
+                            <button class="cat-btn" data-category="Аксессуары">Аксессуары</button>
+                            <button class="cat-btn" data-category="Канцелярия">Канцелярия</button>
+                            <button class="cat-btn" data-category="Сувениры">Сувениры</button>
+                            <button class="cat-btn" data-category="Прочее">Прочее</button>
+                        </div>
+                        
+                        <div class="sort-bar">
+                            <span class="sort-label">Сортировка:</span>
+                            <button class="sort-btn active" data-sort="default">📋 По умолчанию</button>
+                            <button class="sort-btn" data-sort="asc">⬆️ Дешевле</button>
+                            <button class="sort-btn" data-sort="desc">⬇️ Дороже</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="productsGrid" class="products-grid">
+                    <div style="text-align: center; padding: 2rem;">Загрузка товаров...</div>
+                </div>
+            </section>
+        </div>
+        
+        <footer class="shop-footer">
+            <div class="footer-content">
+                <span>© 2026 ЧГУ | Сувенирная лавка</span>
+                <span>Все права защищены</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Модальное окно входа -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h3>Вход в админ-панель</h3>
+            <input type="text" id="loginInput" placeholder="Логин" class="modal-input">
+            <input type="password" id="passwordInput" placeholder="Пароль" class="modal-input">
+            <div class="modal-buttons">
+                <button id="loginSubmit" class="modal-btn primary">Войти</button>
+                <button id="loginCancel" class="modal-btn">Отмена</button>
+            </div>
+            <p id="loginError" class="error-msg"></p>
+        </div>
+    </div>
+
+    <!-- Модальное окно добавления/редактирования товара -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <h3 id="productModalTitle">Добавить товар</h3>
+            <input type="hidden" id="productId">
+            <input type="text" id="productName" placeholder="Название товара" class="modal-input">
+            <input type="text" id="productCategoryInput" placeholder="Категория" class="modal-input" list="categorySuggestions">
+            <datalist id="categorySuggestions">
+                <option value="Одежда">
+                <option value="Аксессуары">
+                <option value="Канцелярия">
+                <option value="Сувениры">
+                <option value="Прочее">
+            </datalist>
+            <input type="text" id="productImage" placeholder="URL изображения" class="modal-input">
+            <input type="number" id="productPrice" placeholder="Цена" class="modal-input">
+            <input type="text" id="productDescription" placeholder="Описание" class="modal-input">
+            <label class="checkbox-label">
+                <input type="checkbox" id="productInStock" checked> В наличии
+            </label>
+            <div id="variantsContainer">
+                <p style="font-size:0.8rem;color:#64748b;margin-top:0.5rem;">Варианты (оставьте пустым если нет)</p>
+                <div id="variantsList"></div>
+                <button id="addVariant" class="modal-btn small">+ Добавить вариант</button>
+            </div>
+            <div class="modal-buttons">
+                <button id="productSave" class="modal-btn primary">Сохранить</button>
+                <button id="productCancel" class="modal-btn">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/render.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    background: #ffffff;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.brand-header {
+    position: relative;
+    background: #1a1a1a;
+    background-image: url('../images/bpzUmNObzbA.png');
+    background-position: top center;
+    background-repeat: no-repeat;
+    height: 370px;
+    background-size: cover;
+    border-bottom: 4px solid #e31e23;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 4rem;
+}
+
+.header-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(95deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.55) 100%);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-direction: column;
+    padding: 3rem 4rem 92.5px 4rem;
+    z-index: 1;
+    box-sizing: border-box;
+}
+
+.header-overlay p {
+    color: rgba(255,255,255,0.95);
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    letter-spacing: 0.5px;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.8rem;
+    padding: 2.2rem 2rem 2.5rem 2rem;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    align-items: stretch;
+}
+
+.service-card {
+    background: #ffffff;
+    border-radius: 1.5rem;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 0 0 1px #e5e5e5;
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+
+.service-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 25px 35px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px #d0d0d0;
+}
+
+.service-card:active {
+    transform: scale(0.98);
+}
+
+.card-accent {
+    height: 6px;
+    width: 100%;
+    background: #e31e24;
+}
+
+.card-content {
+    padding: 1.7rem 1.5rem 1.9rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.card-icon {
+    font-size: 2.6rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+.card-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #000000;
+    letter-spacing: -0.3px;
+    margin-bottom: 0.8rem;
+    line-height: 1.2;
+}
+
+.card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #e31e24;
+    text-decoration: none;
+    border-bottom: 1.5px solid rgba(227, 30, 36, 0.25);
+    transition: gap 0.2s, border-color 0.2s;
+    width: fit-content;
+    padding-bottom: 2px;
+    margin-top: auto;
+}
+
+.card-link:hover {
+    gap: 0.75rem;
+    border-bottom-color: #e31e24;
+    color: #b11218;
+}
+
+.card-link .arrow {
+    display: inline-block;
+    transition: transform 0.25s ease;
+}
+
+.service-card:hover .card-link .arrow {
+    transform: translateX(5px);
+}
+
+.footer-note {
+    background: #f8f8f8;
+    border-top: 1px solid #eaeaea;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    color: #5a5a5a;
+    width: 100%;
+    margin-top: auto;
+}
+
+.badge-mini {
+    background: #efefef;
+    padding: 0.25rem 0.9rem;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    color: #1f1f1f;
+    font-weight: 500;
+}
+
+.toast-message {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    background: rgba(0,0,0,0.85);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 60px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+    z-index: 1200;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+    border-left: 4px solid #e31e24;
+    white-space: nowrap;
+}
+
+.toast-message.show {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+.back-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 30px;
+    text-decoration: none;
+    color: #e31e24;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 100;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.back-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
