@@ -1,7 +1,6 @@
-let products = [];
-
-(function() {
-    products = loadProducts();
+(async function() {
+    const res = await fetch('/api/products');
+    products = await res.json();
 
     function init() {
         renderProducts(products);
