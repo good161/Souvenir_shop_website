@@ -85,7 +85,6 @@ function renderProducts(products) {
 
     grid.innerHTML = '';
 
-    // Кнопка добавления всегда первая
     if (isAdmin && !showArchived) {
         const addCard = document.createElement('div');
         addCard.className = 'product-card admin-add-card';
@@ -121,7 +120,6 @@ function renderProducts(products) {
             const description = this.dataset.description;
             const priceEl = document.getElementById(`price-${productId}`);
             const card = document.querySelector(`.product-card[data-id="${productId}"]`);
-            const product = products.find(p => p.id === productId);
             
             if (priceEl) priceEl.textContent = price ? formatPrice(price) : '';
             if (card) {
