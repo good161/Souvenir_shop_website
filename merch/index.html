@@ -16,12 +16,12 @@
         <button id="adminBtn" class="admin-button" title="Админ-панель">⚙️</button>
         <button id="scrollTopBtn" class="scroll-button scroll-top" title="Наверх">↑</button>
         <button id="scrollBottomBtn" class="scroll-button scroll-bottom" title="Вниз">↓</button>
-        <div class="shop-header">
-                    <h1>Сувенирная лавка ЧГУ</h1>
-                </div>
+        
         <div class="app-layout">
             <section class="products-container">
-                
+                <div class="shop-header">
+                    <h1>Сувенирная лавка ЧГУ</h1>
+                </div>
                 
                 <div class="controls-bar">
                     <div class="search-wrapper">
@@ -31,16 +31,11 @@
                     <div class="filter-sort-bar">
                         <div class="category-filters">
                             <button class="cat-btn active" data-category="all">Все товары</button>
-                            <button class="cat-btn" data-category="Одежда">Одежда</button>
-                            <button class="cat-btn" data-category="Аксессуары">Аксессуары</button>
-                            <button class="cat-btn" data-category="Канцелярия">Канцелярия</button>
-                            <button class="cat-btn" data-category="Сувениры">Сувениры</button>
-                            <button class="cat-btn" data-category="Прочее">Прочее</button>
                         </div>
                         
                         <div class="sort-bar">
                             <span class="sort-label">Сортировка:</span>
-                            <button class="sort-btn active" data-sort="default">📋 По умолчанию</button>
+                            <button class="sort-btn active" data-sort="name">📋 По алфавиту</button>
                             <button class="sort-btn" data-sort="asc">⬆️ Дешевле</button>
                             <button class="sort-btn" data-sort="desc">⬇️ Дороже</button>
                         </div>
@@ -61,7 +56,7 @@
         </footer>
     </div>
 
-    <!-- Модальное окно входа -->
+    <!-- Вход -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <h3>Вход в админ-панель</h3>
@@ -75,28 +70,23 @@
         </div>
     </div>
 
-    <!-- Модальное окно добавления/редактирования товара -->
+    <!-- Добавление/редактирование товара -->
     <div id="productModal" class="modal">
         <div class="modal-content">
             <h3 id="productModalTitle">Добавить товар</h3>
             <input type="hidden" id="productId">
+            <input type="hidden" id="productImage">
             <input type="text" id="productName" placeholder="Название товара" class="modal-input">
             <input type="text" id="productCategoryInput" placeholder="Категория" class="modal-input" list="categorySuggestions">
-            <datalist id="categorySuggestions">
-                <option value="Одежда">
-                <option value="Аксессуары">
-                <option value="Канцелярия">
-                <option value="Сувениры">
-                <option value="Прочее">
-            </datalist>
-            <input type="text" id="productImage" placeholder="URL изображения" class="modal-input">
+            <datalist id="categorySuggestions"></datalist>
+            <input type="file" id="productImageFile" accept="image/jpeg,image/png,image/webp,image/gif" class="modal-input">
+            <img id="imagePreview" src="https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image" style="width:100px;height:100px;object-fit:contain;margin:0.5rem 0;border-radius:8px;">
+            <p id="imageError" style="color:#ef4444;font-size:0.75rem;"></p>
             <input type="number" id="productPrice" placeholder="Цена" class="modal-input">
             <input type="text" id="productDescription" placeholder="Описание" class="modal-input">
-            <label class="checkbox-label">
-                <input type="checkbox" id="productInStock" checked> В наличии
-            </label>
+            <label class="checkbox-label"><input type="checkbox" id="productInStock" checked> В наличии</label>
             <div id="variantsContainer">
-                <p style="font-size:0.8rem;color:#64748b;margin-top:0.5rem;">Варианты (оставьте пустым если нет)</p>
+                <p style="font-size:0.8rem;color:#64748b;margin-top:0.5rem;">Варианты</p>
                 <div id="variantsList"></div>
                 <button id="addVariant" class="modal-btn small">+ Добавить вариант</button>
             </div>
