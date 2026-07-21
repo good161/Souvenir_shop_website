@@ -214,8 +214,6 @@ function initAdmin() {
     document.getElementById('productCancel').addEventListener('click', hideProductModal);
     document.getElementById('addVariant').addEventListener('click', () => addVariantRow());
     
-    document.getElementById('scrollTopBtn').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-    document.getElementById('scrollBottomBtn').addEventListener('click', () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }));
     
     document.getElementById('productImageFile').addEventListener('change', function() {
         const file = this.files[0];
