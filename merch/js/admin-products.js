@@ -25,7 +25,7 @@ function hideProductModal() {
     editingProductId = null;
 }
 
-function saveProduct() {
+async function saveProduct() {
     const id = document.getElementById('productId').value;
     const name = document.getElementById('productName').value.trim();
     const category = document.getElementById('productCategoryInput').value.trim() || 'Без категории';
@@ -40,45 +40,41 @@ function saveProduct() {
     
     if (variants) price = null;
     if (!price && !variants) price = 0;
-    
-    const imageInput = document.getElementById('productImageFile');
-    if (imageInput.files.length > 0) {
-        image = URL.createObjectURL(imageInput.files[0]);
-    }
     if (!image) image = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
     
     const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image, description, inStock, price, variants };
     
-    if (id) {
-        const index = products.findIndex(p => p.id === id);
-        if (index !== -1) products[index] = productData;
-    } else {
-        products.push(productData);
-    }
+    await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData)
+    });
     
-    saveProducts();
+    await loadProductsFromDB();
     hideProductModal();
     updateCategoryButtons();
     renderProducts(products);
 }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
     if (confirm('Удалить товар навсегда?')) {
-        products = products.filter(p => p.id !== id);
-        saveProducts();
+        await fetch(`/api/products/${id}`, { method: 'DELETE' });
+        await loadProductsFromDB();
         updateCategoryButtons();
         renderProducts(products);
     }
 }
 
-function archiveProduct(id) {
-    const product = products.find(p => p.id === id);
-    if (product) { product.archived = true; product.inStock = false; saveProducts(); renderProducts(products); }
+async function archiveProduct(id) {
+    await fetch(`/api/products/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archived: true, inStock: false }) });
+    await loadProductsFromDB();
+    renderProducts(products);
 }
 
-function restoreProduct(id) {
-    const product = products.find(p => p.id === id);
-    if (product) { product.archived = false; saveProducts(); renderProducts(products); }
+async function restoreProduct(id) {
+    await fetch(`/api/products/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archived: false }) });
+    await loadProductsFromDB();
+    renderProducts(products);
 }
 
 function toggleArchived() {
