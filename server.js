@@ -84,7 +84,4 @@ app.patch('/api/products/:id', async (req, res) => {
     }
 });
 
-if (process.env.NODE_ENV !== 'production') {
-    app.listen(3000, () => console.log('Сервер запущен локально на порту 3000'));
-}
 module.exports = app;
