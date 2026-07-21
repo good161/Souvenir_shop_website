@@ -3,11 +3,7 @@ let products = [];
 function loadProducts() {
     const stored = localStorage.getItem('chsu_merch_products');
     if (stored) {
-        try {
-            products = JSON.parse(stored);
-        } catch (e) {
-            products = [];
-        }
+        try { products = JSON.parse(stored); } catch (e) { products = []; }
     }
 }
 
