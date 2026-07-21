@@ -12,7 +12,7 @@ app.use(express.static(path.join(__dirname)));
 const pool = new Pool({
     host: process.env.DB_HOST || 'aws-0-eu-central-1.pooler.supabase.co',
     port: process.env.DB_PORT || 6543,
-    user: process.env.DB_USER || 'postgres.dilfksqdcdxefnxfeeza',
+    user: process.env.DB_USER || 'postgres.fuvpealbbuvchczwbftr',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'postgres',
     ssl: { rejectUnauthorized: false }
@@ -84,4 +84,4 @@ app.patch('/api/products/:id', async (req, res) => {
     }
 });
 
-module.exports = app;
+app.listen(3000, () => console.log('Сервер запущен'));
