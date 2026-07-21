@@ -7,7 +7,7 @@ function renderProducts(products) {
 
     grid.innerHTML = '';
 
-    if (!showArchived) {
+   if (isAdmin && !showArchived) {
         const addCard = document.createElement('div');
         addCard.className = 'product-card admin-add-card';
         addCard.innerHTML = '<div class="admin-add-content"><span style="font-size:3rem;">+</span><span style="font-size:1rem;font-weight:600;">Добавить товар</span></div>';
