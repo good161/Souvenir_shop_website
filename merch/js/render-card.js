@@ -25,8 +25,10 @@ function renderProductCard(product) {
     let priceHtml = `<div class="price">${product.price ? formatPrice(product.price) : ''}</div>`;
     let variantsHtml = '';
     
-    if (product.variants && product.variants.length > 0) {
-        const firstAvailable = product.variants.find(v => v.inStock !== false);
+    const variantsArray = Array.isArray(product.variants) ? product.variants : [];
+    
+    if (variantsArray.length > 0) {
+        const firstAvailable = variantsArray.find(v => v.inStock !== false);
         if (isRealImage(product.image)) {
             mainImage = productImage;
             mainDescription = firstAvailable ? (firstAvailable.description || product.description || '') : (product.description || '');
@@ -35,11 +37,11 @@ function renderProductCard(product) {
             mainDescription = firstAvailable.description || product.description || '';
         }
         
-        variantsHtml = `<div class="product-variants">${product.variants.map((v, i) => {
+        variantsHtml = `<div class="product-variants">${variantsArray.map((v, i) => {
             const out = v.inStock === false;
             const active = firstAvailable && v.label === firstAvailable.label && v.price === firstAvailable.price;
             return `<div class="variant-option ${out ? 'variant-out-of-stock' : ''}">
-                <input type="radio" name="variant-${product.id}" ${active ? 'checked' : ''} data-price="${v.price}" data-image="${getImagePath(v.image) || productImage}" data-description="${v.description || product.description || ''}" ${out ? 'disabled' : ''}>
+                <input type="radio" data-product-id="${product.id}" ${active ? 'checked' : ''} data-price="${v.price}" data-image="${getImagePath(v.image) || productImage}" data-description="${v.description || product.description || ''}" ${out ? 'disabled' : ''}>
                 <label class="${out ? 'out-of-stock-label' : ''}"><span>${v.label}${out ? ' (нет в наличии)' : ''}</span></label>
             </div>`;
         }).join('')}</div>`;
