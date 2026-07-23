@@ -1,3 +1,5 @@
+let isSaving = false;
+
 function showProductModal(product) {
     editingProductId = product ? product.id : null;
     document.getElementById('productModalTitle').textContent = product ? 'Редактировать товар' : 'Добавить товар';
@@ -38,41 +40,54 @@ async function uploadToCloudinary(file) {
 }
 
 async function saveProduct() {
-    const id = document.getElementById('productId').value;
-    const name = document.getElementById('productName').value.trim();
-    const category = document.getElementById('productCategoryInput').value.trim() || 'Без категории';
-    const description = document.getElementById('productDescription').value.trim();
-    const inStock = document.getElementById('productInStock').checked;
-    const variants = await getVariantsFromForm();
-    let price = parseInt(document.getElementById('productPrice').value);
-    let image = document.getElementById('productImage').value.trim();
+    if (isSaving) return;
+    isSaving = true;
     
-    if (!name) return alert('Введите название товара');
-    if (!variants && isNaN(price)) return alert('Введите цену или добавьте варианты');
+    const saveBtn = document.getElementById('productSave');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Сохранение...';
     
-    if (variants && variants.length > 0) price = null;
-    if (!price && (!variants || variants.length === 0)) price = 0;
-    
-    const imageInput = document.getElementById('productImageFile');
-    if (imageInput.files.length > 0) {
-        const uploadedUrl = await uploadToCloudinary(imageInput.files[0]);
-        if (uploadedUrl) image = uploadedUrl;
+    try {
+        const id = document.getElementById('productId').value;
+        const name = document.getElementById('productName').value.trim();
+        const category = document.getElementById('productCategoryInput').value.trim() || 'Без категории';
+        const description = document.getElementById('productDescription').value.trim();
+        const inStock = document.getElementById('productInStock').checked;
+        const variants = await getVariantsFromForm();
+        let price = parseInt(document.getElementById('productPrice').value);
+        let image = document.getElementById('productImage').value.trim();
+        
+        if (!name) { alert('Введите название товара'); return; }
+        if (!variants && isNaN(price)) { alert('Введите цену или добавьте варианты'); return; }
+        
+        if (variants && variants.length > 0) price = null;
+        if (!price && (!variants || variants.length === 0)) price = 0;
+        
+        const imageInput = document.getElementById('productImageFile');
+        if (imageInput.files.length > 0) {
+            const uploadedUrl = await uploadToCloudinary(imageInput.files[0]);
+            if (uploadedUrl) image = uploadedUrl;
+        }
+        
+        if (!image) image = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
+        
+        const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image, description, inStock, price, variants };
+        
+        await fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(productData)
+        });
+        
+        await loadProductsFromDB();
+        hideProductModal();
+        updateCategoryButtons();
+        renderProducts(products);
+    } finally {
+        isSaving = false;
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Сохранить';
     }
-    
-    if (!image) image = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
-    
-    const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image, description, inStock, price, variants };
-    
-    await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productData)
-    });
-    
-    await loadProductsFromDB();
-    hideProductModal();
-    updateCategoryButtons();
-    renderProducts(products);
 }
 
 async function deleteProduct(id) {
