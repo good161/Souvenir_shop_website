@@ -9,8 +9,28 @@ async function loadProductsFromDB() {
     }
 }
 
+function updateCategoryButtons() {
+    const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+    const container = document.querySelector('.category-filters');
+    container.querySelectorAll('.cat-btn:not([data-category="all"])').forEach(b => b.remove());
+    categories.sort((a, b) => a.localeCompare(b, 'ru')).forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'cat-btn';
+        btn.dataset.category = cat;
+        btn.textContent = cat;
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentCategory = this.dataset.category;
+            renderProducts(products);
+        });
+        container.appendChild(btn);
+    });
+}
+
 (async function() {
     await loadProductsFromDB();
+    updateCategoryButtons();
 
     function init() {
         renderProducts(products);
