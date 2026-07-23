@@ -10,7 +10,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://xata:I6fhRVZp3kNl75JmnJzDSnuRe2BIBi9WpvOe6YyPYRMUXmbpPLOH6eoG98lmOMEM@fqa33o7ett6cja9klkfs7j9s7g.us-east-1.xata.tech/xata?sslmode=require',
+    host: process.env.DB_HOST || 'fqa33o7ett6cja9klkfs7j9s7g.us-east-1.xata.tech',
+    port: process.env.DB_PORT || 5432,
+    user: process.env.DB_USER || 'xata',
+    password: process.env.DB_PASSWORD || 'I6fhRVZp3kNl75JmnJzDSnuRe2BIBi9WpvOe6YyPYRMUXmbpPLOH6eoG98lmOMEM',
+    database: process.env.DB_NAME || 'xata',
     ssl: { rejectUnauthorized: false }
 });
 
