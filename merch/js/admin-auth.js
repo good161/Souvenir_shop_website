@@ -25,7 +25,6 @@ function initAdminAuth() {
             const data = await res.json();
 
             if (data.success) {
-
                 isAdmin = true;
                 adminRole = data.role;
                 localStorage.setItem('isAdmin', 'true');
@@ -34,9 +33,9 @@ function initAdminAuth() {
                 errorElement.classList.remove('show');
                 document.getElementById('adminBtn').classList.add('active');
                 hideLoginModal();
-                
+                updateCategoryButtons();
+                renderProducts(products);
             } else {
-
                 errorElement.textContent = data.error || 'Неверный логин или пароль';
                 errorElement.classList.add('show');
             }
@@ -46,4 +45,6 @@ function initAdminAuth() {
             errorElement.classList.add('show');
         }
     });
+    
+    document.getElementById('loginCancel').addEventListener('click', hideLoginModal);
 }
