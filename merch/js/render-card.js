@@ -25,8 +25,10 @@ function renderProductCard(product) {
     let priceHtml = `<div class="price">${product.price ? formatPrice(product.price) : ''}</div>`;
     let variantsHtml = '';
     
-    if (product.variants) {
-        const firstAvailable = product.variants.find(v => v.inStock !== false);
+    const variantsArray = Array.isArray(product.variants) ? product.variants : [];
+    
+    if (variantsArray.length > 0) {
+        const firstAvailable = variantsArray.find(v => v.inStock !== false);
         if (isRealImage(product.image)) {
             mainImage = productImage;
             mainDescription = firstAvailable ? (firstAvailable.description || product.description || '') : (product.description || '');
@@ -35,7 +37,7 @@ function renderProductCard(product) {
             mainDescription = firstAvailable.description || product.description || '';
         }
         
-        variantsHtml = `<div class="product-variants">${product.variants.map((v, i) => {
+        variantsHtml = `<div class="product-variants">${variantsArray.map((v, i) => {
             const out = v.inStock === false;
             const active = firstAvailable && v.label === firstAvailable.label && v.price === firstAvailable.price;
             return `<div class="variant-option ${out ? 'variant-out-of-stock' : ''}">
