@@ -37,6 +37,7 @@ function renderProducts(products) {
 
     document.querySelectorAll('.variant-option input[type="radio"]:not([disabled])').forEach(radio => {
         radio.addEventListener('change', function() {
+            const scrollY = window.scrollY;
             const productId = this.name.replace('variant-', '');
             const price = parseInt(this.dataset.price);
             const image = this.dataset.image;
@@ -54,6 +55,7 @@ function renderProducts(products) {
                 }
                 if (desc) desc.textContent = description || '';
             }
+            window.scrollTo(0, scrollY);
         });
     });
 }
