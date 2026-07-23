@@ -36,26 +36,28 @@ function renderProducts(products) {
     }
 
     document.querySelectorAll('.variant-option input[type="radio"]:not([disabled])').forEach(radio => {
-        radio.addEventListener('change', function() {
-            const scrollY = window.scrollY;
-            const productId = this.name.replace('variant-', '');
+        radio.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.dataset.productId;
+            const card = document.querySelector(`.product-card[data-id="${productId}"]`);
+            if (!card) return;
+            
+            card.querySelectorAll('.variant-option input[type="radio"]').forEach(r => r.checked = false);
+            this.checked = true;
+            
             const price = parseInt(this.dataset.price);
             const image = this.dataset.image;
             const description = this.dataset.description;
             const priceEl = document.getElementById(`price-${productId}`);
-            const card = document.querySelector(`.product-card[data-id="${productId}"]`);
             
             if (priceEl) priceEl.textContent = price ? formatPrice(price) : '';
-            if (card) {
-                const img = card.querySelector('img');
-                const desc = card.querySelector('.product-description');
-                if (img && image) {
-                    img.src = image;
-                    img.onerror = function() { this.src = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=Error'; };
-                }
-                if (desc) desc.textContent = description || '';
+            const img = card.querySelector('img');
+            const desc = card.querySelector('.product-description');
+            if (img && image) {
+                img.src = image;
+                img.onerror = function() { this.src = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=Error'; };
             }
-            window.scrollTo(0, scrollY);
+            if (desc) desc.textContent = description || '';
         });
     });
 }
