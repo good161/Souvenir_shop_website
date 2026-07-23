@@ -21,16 +21,18 @@ function initAdminAuth() {
                 body: JSON.stringify({ login, password })
             });
             
-            if (res.ok) {
-                const data = await res.json();
+            const data = await res.json();
+            
+            if (data.success) {
                 isAdmin = true;
                 adminRole = data.role;
+                localStorage.setItem('isAdmin', 'true');
                 document.getElementById('adminBtn').classList.add('active');
                 hideLoginModal();
                 updateCategoryButtons();
                 renderProducts(products);
             } else {
-                document.getElementById('loginError').textContent = 'Неверный логин или пароль';
+                document.getElementById('loginError').textContent = data.error || 'Неверный логин или пароль';
                 document.getElementById('loginError').classList.add('show');
             }
         } catch (err) {
