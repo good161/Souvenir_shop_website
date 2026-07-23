@@ -25,6 +25,18 @@ function hideProductModal() {
     editingProductId = null;
 }
 
+async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'chsu_merch');
+    const res = await fetch('https://api.cloudinary.com/v1_1/sd0mazc2/image/upload', { method: 'POST', body: formData });
+    if (res.ok) {
+        const data = await res.json();
+        return data.secure_url;
+    }
+    return null;
+}
+
 async function saveProduct() {
     const id = document.getElementById('productId').value;
     const name = document.getElementById('productName').value.trim();
@@ -40,6 +52,13 @@ async function saveProduct() {
     
     if (variants) price = null;
     if (!price && !variants) price = 0;
+    
+    const imageInput = document.getElementById('productImageFile');
+    if (imageInput.files.length > 0) {
+        const uploadedUrl = await uploadToCloudinary(imageInput.files[0]);
+        if (uploadedUrl) image = uploadedUrl;
+    }
+    
     if (!image) image = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
     
     const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image, description, inStock, price, variants };
