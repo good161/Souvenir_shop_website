@@ -9,7 +9,7 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
         <input type="number" class="variant-price" placeholder="Цена" value="${price}">
         <input type="file" class="variant-image-file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
         <button class="variant-image-btn" title="Загрузить фото">🖼️</button>
-        <img class="variant-preview" src="${image}" style="width:30px;height:30px;object-fit:cover;border-radius:4px;display:${image ? 'block' : 'none'};">
+        <img class="variant-preview" src="${image}" style="width:30px;height:30px;object-fit:cover;border-radius:4px;display:${image && !image.startsWith('blob:') ? 'block' : 'none'};">
         <input type="text" class="variant-description" placeholder="Описание" value="${description}">
         <label class="variant-stock-label"><input type="checkbox" class="variant-stock" ${inStock ? 'checked' : ''}></label>
         <button class="remove-variant">✕</button>
@@ -36,10 +36,22 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
     container.appendChild(row);
 }
 
-function getVariantsFromForm() {
+async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'chsu_merch');
+    const res = await fetch('https://api.cloudinary.com/v1_1/sd0mazc2/image/upload', { method: 'POST', body: formData });
+    if (res.ok) {
+        const data = await res.json();
+        return data.secure_url;
+    }
+    return null;
+}
+
+async function getVariantsFromForm() {
     const rows = document.querySelectorAll('.variant-row');
     const variants = [];
-    rows.forEach(row => {
+    for (const row of rows) {
         const label = row.querySelector('.variant-label').value.trim();
         const price = parseInt(row.querySelector('.variant-price').value);
         const description = row.querySelector('.variant-description').value.trim();
@@ -48,9 +60,13 @@ function getVariantsFromForm() {
         const fileInput = row.querySelector('.variant-image-file');
         
         if (label && !isNaN(price)) {
-            if (fileInput.files.length > 0) image = URL.createObjectURL(fileInput.files[0]);
+            if (fileInput.files.length > 0) {
+                const uploadedUrl = await uploadToCloudinary(fileInput.files[0]);
+                if (uploadedUrl) image = uploadedUrl;
+            }
+            if (image && image.startsWith('blob:')) image = '';
             variants.push({ label, price, inStock, image: image || '', description });
         }
-    });
+    }
     return variants.length > 0 ? variants : null;
 }
