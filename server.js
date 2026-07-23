@@ -29,6 +29,35 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+app.get('/api/admins', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT id, username, role FROM admins ORDER BY id');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/admins', async (req, res) => {
+    const { username, password, role } = req.body;
+    try {
+        const hash = hashPassword(password);
+        await pool.query('INSERT INTO admins (username, password_hash, role) VALUES ($1,$2,$3)', [username, hash, role]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/admins/:id', async (req, res) => {
+    try {
+        await pool.query('DELETE FROM admins WHERE id = $1', [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.get('/api/products', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM products ORDER BY created_at DESC');
