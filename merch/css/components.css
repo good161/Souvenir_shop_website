@@ -343,3 +343,8 @@
     margin-bottom: 1rem;
     min-height: 200px;
 }
+.product-image-wrapper img {
+    min-height: 200px;
+    background: #f8fafc;
+    transition: opacity 0.15s;
+}
