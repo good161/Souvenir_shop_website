@@ -41,7 +41,7 @@ function renderProductCard(product) {
             const out = v.inStock === false;
             const active = firstAvailable && v.label === firstAvailable.label && v.price === firstAvailable.price;
             return `<div class="variant-option ${out ? 'variant-out-of-stock' : ''}">
-                <input type="radio" data-product-id="${product.id}" ${active ? 'checked' : ''} data-price="${v.price}" data-image="${getImagePath(v.image) || productImage}" data-description="${v.description || product.description || ''}" ${out ? 'disabled' : ''}>
+                <input type="radio" name="variant-${product.id}" ${active ? 'checked' : ''} data-price="${v.price}" data-image="${getImagePath(v.image) || productImage}" data-description="${v.description || product.description || ''}" ${out ? 'disabled' : ''}>
                 <label class="${out ? 'out-of-stock-label' : ''}"><span>${v.label}${out ? ' (нет в наличии)' : ''}</span></label>
             </div>`;
         }).join('')}</div>`;
@@ -54,7 +54,7 @@ function renderProductCard(product) {
     card.innerHTML = `
         ${isFullyOutOfStock && !isArchived ? '<div class="out-of-stock-badge">Нет в наличии</div>' : ''}
         ${isArchived ? '<div class="out-of-stock-badge archived-badge">В архиве</div>' : ''}
-        <div class="product-image-wrapper"><img src="${escapeHtml(mainImage)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.src='https://placehold.co/400x400/e9eef3/8b9cb0?text=Error'"></div>
+        <div class="product-image-wrapper"><img src="${escapeHtml(mainImage)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.src='https://placehold.co/400x400/e9eef3/8b9cb0?text=Error'" style="transition: opacity 0.15s;"></div>
         <h3>${escapeHtml(product.name)}</h3>
         ${priceHtml}
         ${variantsHtml}
