@@ -19,8 +19,10 @@ async function loadAdmins() {
 async function addAdmin() {
     const username = document.getElementById('newAdminUsername').value.trim();
     const password = document.getElementById('newAdminPassword').value.trim();
-    const role = document.getElementById('newAdminRole').value;
+    const role = 'manager';
+    
     if (!username || !password) return alert('Заполните все поля');
+    
     await fetch('/api/admins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password, role }) });
     document.getElementById('newAdminUsername').value = '';
     document.getElementById('newAdminPassword').value = '';
