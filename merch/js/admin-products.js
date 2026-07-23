@@ -13,7 +13,7 @@ function showProductModal(product) {
     document.getElementById('productImageFile').value = '';
     
     document.getElementById('variantsList').innerHTML = '';
-    if (product && product.variants) {
+    if (product && product.variants && Array.isArray(product.variants)) {
         product.variants.forEach(v => addVariantRow(v.label, v.price, v.inStock !== false, v.image || '', v.description || ''));
     }
     
@@ -43,15 +43,15 @@ async function saveProduct() {
     const category = document.getElementById('productCategoryInput').value.trim() || 'Без категории';
     const description = document.getElementById('productDescription').value.trim();
     const inStock = document.getElementById('productInStock').checked;
-    const variants = getVariantsFromForm();
+    const variants = await getVariantsFromForm();
     let price = parseInt(document.getElementById('productPrice').value);
     let image = document.getElementById('productImage').value.trim();
     
     if (!name) return alert('Введите название товара');
     if (!variants && isNaN(price)) return alert('Введите цену или добавьте варианты');
     
-    if (variants) price = null;
-    if (!price && !variants) price = 0;
+    if (variants && variants.length > 0) price = null;
+    if (!price && (!variants || variants.length === 0)) price = 0;
     
     const imageInput = document.getElementById('productImageFile');
     if (imageInput.files.length > 0) {
