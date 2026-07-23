@@ -333,3 +333,13 @@
     gap: 0.5rem;
     color: #e31e24;
 }
+
+.product-card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    border-radius: 12px;
+    background: #ffffff;
+    margin-bottom: 1rem;
+    min-height: 200px;
+}
