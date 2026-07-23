@@ -46,7 +46,7 @@ function renderProducts(products) {
             
             if (priceEl) priceEl.textContent = price ? formatPrice(price) : '';
             if (card) {
-                const img = card.querySelector('.product-image-wrapper img');
+                const img = card.querySelector('img');
                 const desc = card.querySelector('.product-description');
                 if (img && image) {
                     img.src = image;
