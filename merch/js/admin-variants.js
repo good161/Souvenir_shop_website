@@ -1,78 +1,147 @@
-function addVariantRow(label = '', price = '', inStock = true, image = '', description = '') {
-    const container = document.getElementById('variantsList');
-    const hasValidImage = image && image.startsWith('http') && !image.includes('vercel.app');
-    const row = document.createElement('div');
-    row.className = 'variant-row';
-    row.innerHTML = `
-        <button class="variant-up" title="Вверх">↑</button>
-        <button class="variant-down" title="Вниз">↓</button>
-        <input type="text" class="variant-label" placeholder="Название" value="${label}">
-        <input type="number" class="variant-price" placeholder="Цена" value="${price}">
-        <input type="file" class="variant-image-file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
-        <button class="variant-image-btn" title="Загрузить фото">🖼️</button>
-        <img class="variant-preview" src="${hasValidImage ? image : ''}" data-saved-url="${hasValidImage ? image : ''}" style="width:30px;height:30px;object-fit:cover;border-radius:4px;display:${hasValidImage ? 'block' : 'none'};" onerror="this.style.display='none'">
-        <input type="text" class="variant-description" placeholder="Описание" value="${description}">
-        <label class="variant-stock-label"><input type="checkbox" class="variant-stock" ${inStock ? 'checked' : ''}></label>
-        <button class="remove-variant">✕</button>
-    `;
-    
-    row.querySelector('.remove-variant').addEventListener('click', () => row.remove());
-    row.querySelector('.variant-up').addEventListener('click', () => {
-        const prev = row.previousElementSibling;
-        if (prev && prev.classList.contains('variant-row')) container.insertBefore(row, prev);
-    });
-    row.querySelector('.variant-down').addEventListener('click', () => {
-        const next = row.nextElementSibling;
-        if (next && next.classList.contains('variant-row')) container.insertBefore(next, row);
-    });
-    row.querySelector('.variant-image-btn').addEventListener('click', () => row.querySelector('.variant-image-file').click());
-    row.querySelector('.variant-image-file').addEventListener('change', function() {
-        const file = this.files[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            const preview = row.querySelector('.variant-preview');
-            preview.src = url;
-            preview.style.display = 'block';
-            preview.setAttribute('data-saved-url', '');
-        }
-    });
-    
-    container.appendChild(row);
+function showProductModal(product) {
+editingProductId = product ? product.id : null;
+document.getElementById('productModalTitle').textContent = product ? 'Редактировать товар' : 'Добавить товар';
+document.getElementById('productId').value = product ? product.id : '';
+document.getElementById('productName').value = product ? product.name : '';
+document.getElementById('productCategoryInput').value = product ? (product.category || '') : '';
+document.getElementById('productPrice').value = product && product.price ? product.price : '';
+document.getElementById('productDescription').value = product ? (product.description || '') : '';
+document.getElementById('productInStock').checked = product ? (product.inStock !== false) : true;
+document.getElementById('imageError').textContent = '';
+document.getElementById('imagePreview').src = product && product.image ? product.image : 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
+document.getElementById('productImage').value = product ? (product.image || '') : '';
+document.getElementById('productImageFile').value = '';
+
+document.getElementById('variantsList').innerHTML = '';
+if (product && product.variants) {
+product.variants.forEach(v => addVariantRow(v.label, v.price, v.inStock !== false, v.image || '', v.description || ''));
+}
+
+document.getElementById('productModal').classList.add('show');
+}
+
+function hideProductModal() {
+document.getElementById('productModal').classList.remove('show');
+editingProductId = null;
 }
 
 async function uploadToCloudinary(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'chsu_merch');
-    const res = await fetch('https://api.cloudinary.com/v1_1/sd0mazc2/image/upload', { method: 'POST', body: formData });
-    if (res.ok) {
-        const data = await res.json();
-        return data.secure_url;
-    }
-    return null;
+const formData = new FormData();
+formData.append('file', file);
+formData.append('upload_preset', 'chsu_merch');
+const res = await fetch('https://api.cloudinary.com/v1_1/sd0mazc2/image/upload', { method: 'POST', body: formData });
+if (res.ok) {
+const data = await res.json();
+return data.secure_url;
+}
+return null;
 }
 
-async function getVariantsFromForm() {
-    const rows = document.querySelectorAll('.variant-row');
-    const variants = [];
-    for (const row of rows) {
-        const label = row.querySelector('.variant-label').value.trim();
-        const price = parseInt(row.querySelector('.variant-price').value);
-        const description = row.querySelector('.variant-description').value.trim();
-        const inStock = row.querySelector('.variant-stock').checked;
-        const previewImg = row.querySelector('.variant-preview');
-        let imageUrl = previewImg.getAttribute('data-saved-url') || '';
-        const fileInput = row.querySelector('.variant-image-file');
-        
-        if (label && !isNaN(price)) {
-            if (fileInput.files.length > 0) {
-                const uploadedUrl = await uploadToCloudinary(fileInput.files[0]);
-                if (uploadedUrl) imageUrl = uploadedUrl;
-            }
-            if (imageUrl && imageUrl.startsWith('blob:')) imageUrl = '';
-            if (imageUrl && imageUrl.includes('vercel.app')) imageUrl = '';
-            variants.push({ label, price, inStock, image: imageUrl || '', description });
-        }
-    }
-    return variants.length > 0 ? variants : null;
+async function saveProduct() {
+const id = document.getElementById('productId').value;
+const name = document.getElementById('productName').value.trim();
+const category = document.getElementById('productCategoryInput').value.trim() || 'Без категории';
+const description = document.getElementById('productDescription').value.trim();
+const inStock = document.getElementById('productInStock').checked;
+const variants = getVariantsFromForm();
+let price = parseInt(document.getElementById('productPrice').value);
+let image = document.getElementById('productImage').value.trim();
+
+if (!name) return alert('Введите название товара');
+if (!variants && isNaN(price)) return alert('Введите цену или добавьте варианты');
+
+if (variants) price = null;
+if (!price && !variants) price = 0;
+
+const imageInput = document.getElementById('productImageFile');
+if (imageInput.files.length > 0) {
+const uploadedUrl = await uploadToCloudinary(imageInput.files[0]);
+if (uploadedUrl) image = uploadedUrl;
+}
+
+if (!image) image = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
+
+const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image, description, inStock, price, variants };
+
+await fetch('/api/products', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(productData)
+});
+
+await loadProductsFromDB();
+hideProductModal();
+updateCategoryButtons();
+renderProducts(products);
+}
+
+async function deleteProduct(id) {
+if (confirm('Удалить товар навсегда?')) {
+await fetch(`/api/products/${id}`, { method: 'DELETE' });
+await loadProductsFromDB();
+updateCategoryButtons();
+renderProducts(products);
+}
+}
+
+async function archiveProduct(id) {
+await fetch(`/api/products/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archived: true, inStock: false }) });
+await loadProductsFromDB();
+renderProducts(products);
+}
+
+async function restoreProduct(id) {
+await fetch(`/api/products/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archived: false }) });
+await loadProductsFromDB();
+renderProducts(products);
+}
+
+function toggleArchived() {
+showArchived = !showArchived;
+renderProducts(products);
+}
+
+function updateCategoryButtons() {
+const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+const container = document.querySelector('.category-filters');
+container.querySelectorAll('.cat-btn:not([data-category="all"])').forEach(b => b.remove());
+categories.sort((a, b) => a.localeCompare(b, 'ru')).forEach(cat => {
+const btn = document.createElement('button');
+btn.className = 'cat-btn';
+btn.dataset.category = cat;
+btn.textContent = cat;
+btn.addEventListener('click', function() {
+document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+this.classList.add('active');
+currentCategory = this.dataset.category;
+renderProducts(products);
+});
+container.appendChild(btn);
+});
+}
+
+function initAdminProducts() {
+document.getElementById('productSave').addEventListener('click', saveProduct);
+document.getElementById('productCancel').addEventListener('click', hideProductModal);
+document.getElementById('addVariant').addEventListener('click', () => addVariantRow());
+
+document.getElementById('productImageFile').addEventListener('change', function() {
+const file = this.files[0];
+if (file) {
+if (!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)) {
+document.getElementById('imageError').textContent = 'Допустимые форматы: JPG, PNG, WEBP, GIF';
+this.value = '';
+return;
+}
+            if (file.size > 5 * 1024 * 1024) {
+                document.getElementById('imageError').textContent = 'Максимальный размер файла: 5 МБ';
+            if (file.size > 10 * 1024 * 1024) {
+                document.getElementById('imageError').textContent = 'Максимальный размер файла: 10 МБ';
+this.value = '';
+return;
+}
+document.getElementById('imageError').textContent = '';
+document.getElementById('imagePreview').src = URL.createObjectURL(file);
+}
+});
 }
