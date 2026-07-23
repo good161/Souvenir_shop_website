@@ -18,6 +18,14 @@ function hashPassword(password) {
     return crypto.createHash('sha256').update(password).digest('hex');
 }
 
+function parseVariants(variants) {
+    if (!variants) return null;
+    if (typeof variants === 'string') {
+        try { return JSON.parse(variants); } catch (e) { return null; }
+    }
+    return variants;
+}
+
 app.post('/api/login', async (req, res) => {
     const { login, password } = req.body;
     try {
@@ -65,7 +73,12 @@ app.delete('/api/admins/:id', async (req, res) => {
 app.get('/api/products', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM products ORDER BY created_at DESC');
-        res.json(result.rows.map(p => ({ id: p.id, name: p.name, category: p.category, image: p.image, price: p.price, description: p.description, inStock: p.in_stock, variants: p.variants, archived: p.archived })));
+        res.json(result.rows.map(p => ({
+            id: p.id, name: p.name, category: p.category, image: p.image,
+            price: p.price, description: p.description, inStock: p.in_stock,
+            variants: parseVariants(p.variants),
+            archived: p.archived
+        })));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -74,7 +87,12 @@ app.get('/api/products', async (req, res) => {
 app.post('/api/products', async (req, res) => {
     try {
         const { id, name, category, image, price, description, inStock, variants } = req.body;
-        await pool.query(`INSERT INTO products (id, name, category, image, price, description, in_stock, variants) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO UPDATE SET name=$2, category=$3, image=$4, price=$5, description=$6, in_stock=$7, variants=$8`, [String(id), name, category, image, price, description, inStock, JSON.stringify(variants)]);
+        await pool.query(
+            `INSERT INTO products (id, name, category, image, price, description, in_stock, variants) 
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8) 
+             ON CONFLICT (id) DO UPDATE SET name=$2, category=$3, image=$4, price=$5, description=$6, in_stock=$7, variants=$8`,
+            [String(id), name, category, image, price, description, inStock, variants ? JSON.stringify(variants) : null]
+        );
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
