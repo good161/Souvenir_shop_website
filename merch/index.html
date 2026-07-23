@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <link rel="icon" type="image/png" href="/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Сувенирная лавка ЧГУ</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
@@ -83,6 +83,7 @@
             <datalist id="categorySuggestions"></datalist>
             <input type="file" id="productImageFile" accept="image/jpeg,image/png,image/webp,image/gif" class="modal-input">
             <img id="imagePreview" src="https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image" style="width:100px;height:100px;object-fit:contain;margin:0.5rem 0;border-radius:8px;">
+            <button id="removeMainImage" class="modal-btn small danger" style="display:none;margin-bottom:0.5rem;">Удалить фото</button>
             <p id="imageError" style="color:#ef4444;font-size:0.75rem;"></p>
             <input type="number" id="productPrice" placeholder="Цена" class="modal-input">
             <input type="text" id="productDescription" placeholder="Описание" class="modal-input">
@@ -107,9 +108,9 @@
             <div style="display:flex;gap:0.5rem;margin-top:1rem;">
                 <input type="text" id="newAdminUsername" placeholder="Логин" class="modal-input" style="flex:1;">
                 <input type="password" id="newAdminPassword" placeholder="Пароль" class="modal-input" style="flex:1;">
-                 <select id="newAdminRole" class="modal-input" style="width:auto;">
-                     <option value="manager">Менеджер</option>
-                 </select>
+                <select id="newAdminRole" class="modal-input" style="width:auto;">
+                    <option value="manager">Менеджер</option>
+                </select>
             </div>
             <button id="addAdminBtn" class="modal-btn primary" style="margin-top:0.5rem;">Добавить</button>
             <button id="closeAdminsBtn" class="modal-btn" style="margin-top:0.5rem;">Закрыть</button>
