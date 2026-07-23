@@ -133,8 +133,8 @@ function initAdminProducts() {
                 this.value = '';
                 return;
             }
-            if (file.size > 5 * 1024 * 1024) {
-                document.getElementById('imageError').textContent = 'Максимальный размер файла: 5 МБ';
+            if (file.size > 10 * 1024 * 1024) {
+                document.getElementById('imageError').textContent = 'Максимальный размер файла: 10 МБ';
                 this.value = '';
                 return;
             }
