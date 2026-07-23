@@ -14,7 +14,7 @@ function renderProducts(products) {
         addCard.addEventListener('click', () => showProductModal(null));
         grid.appendChild(addCard);
     }
-
+ 
     if (isAdmin) {
         const adminBar = document.createElement('div');
         adminBar.style.cssText = 'grid-column:1/-1;display:flex;gap:0.5rem;align-items:center;';
