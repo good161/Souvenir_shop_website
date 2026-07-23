@@ -14,6 +14,11 @@ function showProductModal(product) {
     document.getElementById('productImage').value = product ? (product.image || '') : '';
     document.getElementById('productImageFile').value = '';
     
+    const removeBtn = document.getElementById('removeMainImage');
+    if (removeBtn) {
+        removeBtn.style.display = (product && product.image && product.image !== 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image') ? 'inline-block' : 'none';
+    }
+    
     document.getElementById('variantsList').innerHTML = '';
     if (product && product.variants && Array.isArray(product.variants)) {
         product.variants.forEach(v => addVariantRow(v.label, v.price, v.inStock !== false, v.image || '', v.description || ''));
@@ -155,6 +160,15 @@ function initAdminProducts() {
             }
             document.getElementById('imageError').textContent = '';
             document.getElementById('imagePreview').src = URL.createObjectURL(file);
+            document.getElementById('removeMainImage').style.display = 'inline-block';
         }
+    });
+    
+    document.getElementById('removeMainImage').addEventListener('click', function() {
+        document.getElementById('productImage').value = '';
+        document.getElementById('imagePreview').src = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
+        document.getElementById('productImageFile').value = '';
+        document.getElementById('imageError').textContent = '';
+        this.style.display = 'none';
     });
 }
