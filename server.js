@@ -23,7 +23,11 @@ app.post('/api/login', async (req, res) => {
     try {
         const hash = hashPassword(password);
         const result = await pool.query('SELECT * FROM admins WHERE username = $1 AND password_hash = $2', [login, hash]);
-        res.json(result.rows.length > 0 ? { success: true, role: result.rows[0].role } : { error: 'Неверный логин или пароль' });
+        if (result.rows.length > 0) {
+            res.json({ success: true, role: result.rows[0].role });
+        } else {
+            res.status(401).json({ error: 'Неверный логин или пароль' });
+        }
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
