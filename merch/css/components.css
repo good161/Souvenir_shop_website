@@ -345,6 +345,6 @@
 }
 .product-image-wrapper img {
     min-height: 200px;
-    background: #000000;
+    background: #ffffff;
     transition: opacity 0.15s;
 }
