@@ -19,20 +19,6 @@ function showProductModal(product) {
         removeBtn.style.display = (product && product.image && product.image !== 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image') ? 'inline-block' : 'none';
     }
     
-    const controls = document.getElementById('imageControls');
-    if (controls) {
-        controls.style.display = (product && product.image && product.image !== 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image') ? 'block' : 'none';
-    }
-    const zoomValue = document.getElementById('zoomValue');
-    const zoomSlider = document.getElementById('imageZoom');
-    const preview = document.getElementById('imagePreview');
-    if (zoomValue) zoomValue.textContent = '100%';
-    if (zoomSlider) zoomSlider.value = 100;
-    if (preview) {
-        preview.style.transform = 'scale(1)';
-        preview.style.objectPosition = 'center';
-    }
-    
     document.getElementById('variantsList').innerHTML = '';
     if (product && product.variants && Array.isArray(product.variants)) {
         product.variants.forEach(v => addVariantRow(v.label, v.price, v.inStock !== false, v.image || '', v.description || ''));
@@ -159,31 +145,6 @@ function initAdminProducts() {
     document.getElementById('productCancel').addEventListener('click', hideProductModal);
     document.getElementById('addVariant').addEventListener('click', () => addVariantRow());
     
-    const zoomSlider = document.getElementById('imageZoom');
-    const zoomValue = document.getElementById('zoomValue');
-    const preview = document.getElementById('imagePreview');
-    let posX = 50, posY = 50;
-    
-    if (zoomSlider) {
-        zoomSlider.addEventListener('input', function() {
-            const val = this.value;
-            zoomValue.textContent = val + '%';
-            preview.style.transform = `scale(${val / 100})`;
-        });
-    }
-    
-    document.getElementById('moveUp').addEventListener('click', () => { posY = Math.max(0, posY - 10); preview.style.objectPosition = `${posX}% ${posY}%`; });
-    document.getElementById('moveDown').addEventListener('click', () => { posY = Math.min(100, posY + 10); preview.style.objectPosition = `${posX}% ${posY}%`; });
-    document.getElementById('moveLeft').addEventListener('click', () => { posX = Math.max(0, posX - 10); preview.style.objectPosition = `${posX}% ${posY}%`; });
-    document.getElementById('moveRight').addEventListener('click', () => { posX = Math.min(100, posX + 10); preview.style.objectPosition = `${posX}% ${posY}%`; });
-    document.getElementById('resetPosition').addEventListener('click', () => {
-        posX = 50; posY = 50;
-        zoomSlider.value = 100;
-        zoomValue.textContent = '100%';
-        preview.style.transform = 'scale(1)';
-        preview.style.objectPosition = 'center';
-    });
-    
     document.getElementById('productImageFile').addEventListener('change', function() {
         const file = this.files[0];
         if (file) {
@@ -199,13 +160,7 @@ function initAdminProducts() {
             }
             document.getElementById('imageError').textContent = '';
             document.getElementById('imagePreview').src = URL.createObjectURL(file);
-            document.getElementById('imageControls').style.display = 'block';
             document.getElementById('removeMainImage').style.display = 'inline-block';
-            posX = 50; posY = 50;
-            zoomSlider.value = 100;
-            zoomValue.textContent = '100%';
-            preview.style.transform = 'scale(1)';
-            preview.style.objectPosition = 'center';
         }
     });
     
@@ -214,7 +169,6 @@ function initAdminProducts() {
         document.getElementById('imagePreview').src = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
         document.getElementById('productImageFile').value = '';
         document.getElementById('imageError').textContent = '';
-        document.getElementById('imageControls').style.display = 'none';
         this.style.display = 'none';
     });
 }
