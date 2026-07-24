@@ -133,17 +133,19 @@
     overflow: hidden;
     border-radius: 12px;
     margin-bottom: 1rem;
-    aspect-ratio: 1 / 1;
     background: #f8fafc;
+    padding-top: 100%;
 }
 
 .product-image-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 12px;
     background: #ffffff;
-    transition: opacity 0.15s;
 }
 
 .product-card h3 {
