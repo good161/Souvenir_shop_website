@@ -62,7 +62,6 @@ function renderProductCard(product) {
         ${variantsHtml}
         <div class="product-bottom">
             <p class="product-description">${escapeHtml(mainDescription)}</p>
-            <span class="product-category">${escapeHtml(product.category) || 'Без категории'}</span>
             ${isAdmin ? `<div class="admin-actions show">
                 <button class="modal-btn small edit-product-btn">✏️</button>
                 ${product.archived ? '<button class="modal-btn small primary restore-product-btn">↩️</button>' : '<button class="modal-btn small archive-product-btn">📦</button>'}
