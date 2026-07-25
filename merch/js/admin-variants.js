@@ -8,7 +8,7 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
         <button class="variant-up" title="Вверх">↑</button>
         <button class="variant-down" title="Вниз">↓</button>
         <input type="text" class="variant-label" placeholder="Название" value="${label}" style="flex:1.5;min-width:80px;">
-        <input type="number" class="variant-price" placeholder="Цена" value="${price}" style="flex:0 0 65px;min-width:55px;">
+        <input type="number" class="variant-price" placeholder="Цена" value="${price}" style="width:50px;max-width:50px;min-width:50px;flex:none;">
         <input type="file" class="variant-image-file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
         <button class="variant-image-btn" title="Загрузить фото">🖼️</button>
         <button class="variant-image-remove" title="Удалить фото" style="display:${hasValidImage ? 'inline-block' : 'none'};background:#ef4444;color:white;border:none;width:22px;height:22px;border-radius:4px;cursor:pointer;font-size:0.6rem;flex-shrink:0;padding:0;">✕</button>
