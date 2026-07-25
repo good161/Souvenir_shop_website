@@ -19,6 +19,16 @@ function showProductModal(product) {
         removeBtn.style.display = (product && product.image && product.image !== 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image') ? 'inline-block' : 'none';
     }
     
+    const modeBlock = document.getElementById('primaryImageMode');
+    if (modeBlock && product && product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+        modeBlock.style.display = 'block';
+        const mode = product.imageMode || 'main';
+        const radio = document.querySelector(`input[name="imageMode"][value="${mode}"]`);
+        if (radio) radio.checked = true;
+    } else if (modeBlock) {
+        modeBlock.style.display = 'none';
+    }
+    
     document.getElementById('variantsList').innerHTML = '';
     if (product && product.variants && Array.isArray(product.variants)) {
         product.variants.forEach(v => addVariantRow(v.label, v.price, v.inStock !== false, v.image || '', v.description || ''));
@@ -77,7 +87,9 @@ async function saveProduct() {
         
         if (!image) image = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
         
-        const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image, description, inStock, price, variants };
+        const imageMode = document.querySelector('input[name="imageMode"]:checked')?.value || 'main';
+        
+        const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image, description, inStock, price, variants, imageMode };
         
         await fetch('/api/products', {
             method: 'POST',
