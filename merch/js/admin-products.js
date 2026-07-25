@@ -32,18 +32,6 @@ function hideProductModal() {
     editingProductId = null;
 }
 
-async function uploadToCloudinary(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'chsu_merch');
-    const res = await fetch('https://api.cloudinary.com/v1_1/sd0mazc2/image/upload', { method: 'POST', body: formData });
-    if (res.ok) {
-        const data = await res.json();
-        return data.secure_url;
-    }
-    return null;
-}
-
 async function saveProduct() {
     if (isSaving) return;
     isSaving = true;
@@ -128,25 +116,6 @@ async function restoreProduct(id) {
 function toggleArchived() {
     showArchived = !showArchived;
     renderProducts(products);
-}
-
-function updateCategoryButtons() {
-    const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
-    const container = document.querySelector('.category-filters');
-    container.querySelectorAll('.cat-btn:not([data-category="all"])').forEach(b => b.remove());
-    categories.sort((a, b) => a.localeCompare(b, 'ru')).forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = 'cat-btn';
-        btn.dataset.category = cat;
-        btn.textContent = cat;
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentCategory = this.dataset.category;
-            renderProducts(products);
-        });
-        container.appendChild(btn);
-    });
 }
 
 function initAdminProducts() {
