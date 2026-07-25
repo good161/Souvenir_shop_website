@@ -3,6 +3,7 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
     const hasValidImage = image && image.startsWith('http') && !image.includes('vercel.app');
     const row = document.createElement('div');
     row.className = 'variant-row';
+    row.style.border = inStock ? '2px solid #22c55e' : '2px solid #e2e8f0';
     row.innerHTML = `
         <button class="variant-up" title="Вверх">↑</button>
         <button class="variant-down" title="Вниз">↓</button>
@@ -13,7 +14,9 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
         <button class="variant-image-remove" title="Удалить фото" style="display:${hasValidImage ? 'inline-block' : 'none'};background:#ef4444;color:white;border:none;width:22px;height:22px;border-radius:4px;cursor:pointer;font-size:0.6rem;flex-shrink:0;padding:0;">✕</button>
         <img class="variant-preview" src="${hasValidImage ? image : ''}" data-saved-url="${hasValidImage ? image : ''}" style="width:30px;height:30px;object-fit:cover;border-radius:4px;display:${hasValidImage ? 'block' : 'none'};" onerror="this.style.display='none'">
         <input type="text" class="variant-description" placeholder="Описание" value="${description}">
-        <label class="variant-stock-label"><input type="checkbox" class="variant-stock" ${inStock ? 'checked' : ''}></label>
+        <label class="variant-stock-label" title="В наличии">
+            <input type="checkbox" class="variant-stock" ${inStock ? 'checked' : ''}>
+        </label>
         <button class="remove-variant">✕</button>
     `;
     
@@ -45,6 +48,9 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
         preview.setAttribute('data-saved-url', '');
         row.querySelector('.variant-image-file').value = '';
         row.querySelector('.variant-image-remove').style.display = 'none';
+    });
+    row.querySelector('.variant-stock').addEventListener('change', function() {
+        row.style.border = this.checked ? '2px solid #22c55e' : '2px solid #e2e8f0';
     });
     
     container.appendChild(row);
