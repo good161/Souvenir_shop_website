@@ -191,7 +191,7 @@
         border-radius: 16px !important;
     }
     .product-card h3 {
-        font-size: 0.2rem !important;
+        font-size: 0.2rem;
     }
     .product-card .price {
         font-size: 0.75rem !important;
