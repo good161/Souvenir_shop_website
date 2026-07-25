@@ -86,20 +86,6 @@
             <input type="file" id="productImageFile" accept="image/jpeg,image/png,image/webp,image/gif" class="modal-input">
             <img id="imagePreview" src="https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image" style="width:100px;height:100px;object-fit:contain;margin:0.5rem 0;border-radius:8px;">
             <button id="removeMainImage" class="modal-btn small danger" style="display:none;margin-bottom:0.5rem;">Удалить фото</button>
-            <div id="imageControls" style="display:none;margin:0.5rem 0;">
-                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">
-                    <label style="font-size:0.75rem;">Масштаб:</label>
-                    <input type="range" id="imageZoom" min="50" max="200" value="100" style="flex:1;">
-                    <span id="zoomValue" style="font-size:0.75rem;">100%</span>
-                </div>
-                <div style="display:flex;gap:0.3rem;">
-                    <button class="modal-btn small" id="moveUp">↑</button>
-                    <button class="modal-btn small" id="moveDown">↓</button>
-                    <button class="modal-btn small" id="moveLeft">←</button>
-                    <button class="modal-btn small" id="moveRight">→</button>
-                    <button class="modal-btn small" id="resetPosition">Сброс</button>
-                </div>
-            </div>
             <p id="imageError" style="color:#ef4444;font-size:0.75rem;"></p>
             <input type="number" id="productPrice" placeholder="Цена" class="modal-input">
             <input type="text" id="productDescription" placeholder="Описание" class="modal-input">
