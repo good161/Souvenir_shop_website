@@ -7,17 +7,17 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
     row.innerHTML = `
         <button class="variant-up" title="Вверх">↑</button>
         <button class="variant-down" title="Вниз">↓</button>
-        <input type="text" class="variant-label" placeholder="Название" value="${label}">
-        <input type="number" class="variant-price" placeholder="Цена" value="${price}">
+        <input type="text" class="variant-label" placeholder="Название" value="${label}" style="flex:1.5;min-width:80px;">
+        <input type="number" class="variant-price" placeholder="Цена" value="${price}" style="flex:0 0 65px;min-width:55px;">
         <input type="file" class="variant-image-file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
         <button class="variant-image-btn" title="Загрузить фото">🖼️</button>
         <button class="variant-image-remove" title="Удалить фото" style="display:${hasValidImage ? 'inline-block' : 'none'};background:#ef4444;color:white;border:none;width:22px;height:22px;border-radius:4px;cursor:pointer;font-size:0.6rem;flex-shrink:0;padding:0;">✕</button>
-        <img class="variant-preview" src="${hasValidImage ? image : ''}" data-saved-url="${hasValidImage ? image : ''}" style="width:30px;height:30px;object-fit:cover;border-radius:4px;display:${hasValidImage ? 'block' : 'none'};" onerror="this.style.display='none'">
-        <input type="text" class="variant-description" placeholder="Описание" value="${description}">
-        <label class="variant-stock-label" title="В наличии">
+        <img class="variant-preview" src="${hasValidImage ? image : ''}" data-saved-url="${hasValidImage ? image : ''}" style="width:30px;height:30px;object-fit:cover;border-radius:4px;display:${hasValidImage ? 'block' : 'none'};flex-shrink:0;" onerror="this.style.display='none'">
+        <input type="text" class="variant-description" placeholder="Описание" value="${description}" style="flex:2.5;min-width:100px;">
+        <label class="variant-stock-label" title="В наличии" style="flex-shrink:0;">
             <input type="checkbox" class="variant-stock" ${inStock ? 'checked' : ''}>
         </label>
-        <button class="remove-variant">✕</button>
+        <button class="remove-variant" style="flex-shrink:0;">✕</button>
     `;
     
     row.querySelector('.remove-variant').addEventListener('click', () => row.remove());
