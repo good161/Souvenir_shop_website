@@ -61,38 +61,3 @@
         font-size: 0.7rem;
     }
 }
-@media (max-width: 480px) {
-    .product-card h3 {
-        font-size: 0.85rem;
-    }
-    .product-card .price {
-        font-size: 0.9rem;
-    }
-    .product-description {
-        font-size: 0.65rem;
-    }
-    .variant-option label {
-        font-size: 0.65rem;
-    }
-    .product-category {
-        font-size: 0.55rem;
-    }
-}
-
-@media (max-width: 400px) {
-    .product-card h3 {
-        font-size: 0.75rem;
-    }
-    .product-card .price {
-        font-size: 0.8rem;
-    }
-    .product-description {
-        font-size: 0.6rem;
-    }
-    .variant-option label {
-        font-size: 0.6rem;
-    }
-    .product-category {
-        font-size: 0.5rem;
-    }
-}
