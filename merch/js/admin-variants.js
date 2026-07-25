@@ -74,6 +74,7 @@ async function getVariantsFromForm() {
     for (const row of rows) {
         const label = row.querySelector('.variant-label').value.trim();
         const price = parseInt(row.querySelector('.variant-price').value);
+        const safePrice = isNaN(price) || price < 0 ? 0 : price;
         const description = row.querySelector('.variant-description').value.trim();
         const inStock = row.querySelector('.variant-stock').checked;
         const previewImg = row.querySelector('.variant-preview');
@@ -87,7 +88,7 @@ async function getVariantsFromForm() {
             }
             if (imageUrl && imageUrl.startsWith('blob:')) imageUrl = '';
             if (imageUrl && imageUrl.includes('vercel.app')) imageUrl = '';
-            variants.push({ label, price, inStock, image: imageUrl || '', description });
+            variants.push({ label, price: safePrice, inStock, image: imageUrl || '', description });
         }
     }
     return variants.length > 0 ? variants : null;
