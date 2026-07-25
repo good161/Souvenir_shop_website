@@ -333,3 +333,22 @@
         flex-wrap: wrap;
     }
 }
+.variant-stock-label {
+    position: relative;
+}
+
+.variant-stock-label:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+}
