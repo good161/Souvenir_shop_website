@@ -64,7 +64,6 @@
         grid-template-columns: repeat(3, 1fr);
         gap: 0.7rem;
     }
-    
     .controls-bar {
         padding: 1rem;
     }
@@ -75,18 +74,15 @@
         margin-top: 5px;
         padding: 0 0.5rem 1.5rem;
     }
-    
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 0.6rem;
     }
-    
     .filter-sort-bar {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.8rem;
     }
-    
     .category-filters {
         width: 100%;
         flex-wrap: wrap;
@@ -94,26 +90,10 @@
         padding-bottom: 0.3rem;
         overflow-x: visible;
     }
-    
-    .cat-btn {
-        padding: 0.4rem 0.7rem;
-        font-size: 0.7rem;
-    }
-    
     .sort-bar {
         width: 100%;
         justify-content: flex-start;
     }
-    
-    .sort-btn {
-        padding: 0.35rem 0.6rem;
-        font-size: 0.7rem;
-    }
-    
-    .sort-label {
-        font-size: 0.7rem;
-    }
-    
     .controls-bar {
         padding: 0.8rem;
         border-radius: 18px;
@@ -125,15 +105,8 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 0.5rem;
     }
-    
     .app-layout {
         margin-top: 5px;
         padding: 0 0.3rem 1rem;
-    }
-    
-    .search-input {
-        padding: 0.6rem 0.8rem;
-        font-size: 0.85rem;
-        border-radius: 12px;
     }
 }
