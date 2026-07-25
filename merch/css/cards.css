@@ -184,3 +184,58 @@
     gap: 0.5rem;
     color: #e31e24;
 }
+
+@media (max-width: 480px) {
+    .product-card {
+        padding: 0.8rem;
+        border-radius: 18px;
+    }
+    .product-card h3 {
+        font-size: 0.85rem;
+    }
+    .product-card .price {
+        font-size: 0.9rem;
+        margin: 0.3rem 0;
+    }
+    .product-description {
+        font-size: 0.65rem;
+        padding-top: 0.3rem;
+    }
+    .variant-option label {
+        font-size: 0.65rem;
+    }
+    .product-category {
+        font-size: 0.55rem;
+        padding: 0.15rem 0.5rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .product-card {
+        padding: 0.6rem;
+        border-radius: 14px;
+    }
+    .product-card h3 {
+        font-size: 0.75rem;
+    }
+    .product-card .price {
+        font-size: 0.8rem;
+    }
+    .product-description {
+        font-size: 0.6rem;
+    }
+    .variant-option label {
+        font-size: 0.6rem;
+    }
+    .product-category {
+        font-size: 0.5rem;
+    }
+    .product-variants {
+        gap: 0.1rem;
+        margin: 0.2rem 0;
+    }
+    .variant-option {
+        padding: 0.1rem 0;
+        gap: 0.3rem;
+    }
+}
