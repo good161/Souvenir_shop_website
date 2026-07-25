@@ -14,7 +14,7 @@ function renderProducts(products) {
         addCard.addEventListener('click', () => showProductModal(null));
         grid.appendChild(addCard);
     }
- 
+
     if (isAdmin) {
         const adminBar = document.createElement('div');
         adminBar.style.cssText = 'grid-column:1/-1;display:flex;gap:0.5rem;align-items:center;';
@@ -39,19 +39,13 @@ function renderProducts(products) {
         radio.addEventListener('change', function() {
             const productId = this.name.replace('variant-', '');
             const price = parseInt(this.dataset.price);
-            const image = this.dataset.image;
             const description = this.dataset.description;
             const priceEl = document.getElementById(`price-${productId}`);
             const card = document.querySelector(`.product-card[data-id="${productId}"]`);
             
             if (priceEl) priceEl.textContent = price ? formatPrice(price) : '';
             if (card) {
-                const img = card.querySelector('img');
                 const desc = card.querySelector('.product-description');
-                if (img && image) {
-                    img.src = image;
-                    img.onerror = function() { this.src = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=Error'; };
-                }
                 if (desc) desc.textContent = description || '';
             }
         });
