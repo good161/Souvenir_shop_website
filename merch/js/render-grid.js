@@ -50,7 +50,7 @@ function renderProducts(products) {
                 const desc = card.querySelector('.product-description');
                 if (desc) desc.textContent = description || '';
                 
-                if (product && product.imageMode === 'variant') {
+                if (product && !isRealImage(product.image)) {
                     const img = card.querySelector('.product-image-wrapper img');
                     if (img && image) {
                         img.src = image;
