@@ -39,14 +39,24 @@ function renderProducts(products) {
         radio.addEventListener('change', function() {
             const productId = this.name.replace('variant-', '');
             const price = parseInt(this.dataset.price);
+            const image = this.dataset.image;
             const description = this.dataset.description;
             const priceEl = document.getElementById(`price-${productId}`);
             const card = document.querySelector(`.product-card[data-id="${productId}"]`);
+            const product = products.find(p => p.id === productId);
             
             if (priceEl) priceEl.textContent = price ? formatPrice(price) : '';
             if (card) {
                 const desc = card.querySelector('.product-description');
                 if (desc) desc.textContent = description || '';
+                
+                if (product && product.imageMode === 'variant') {
+                    const img = card.querySelector('.product-image-wrapper img');
+                    if (img && image) {
+                        img.src = image;
+                        img.onerror = function() { this.src = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=Error'; };
+                    }
+                }
             }
         });
     });
