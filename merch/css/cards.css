@@ -66,11 +66,12 @@
 }
 
 .variant-option input[type="radio"] {
-    accent-color: #e31e24;
+    accent-color: #e31e24 !important;
     width: 18px;
     height: 18px;
     cursor: pointer;
     flex-shrink: 0;
+    color-scheme: only light;
 }
 
 .variant-option label {
