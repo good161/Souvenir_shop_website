@@ -24,7 +24,6 @@ function initAdmin() {
     
     initAdminAuth();
     initAdminProducts();
-    initAdminUI();
     initAdminManagers();
 }
 
