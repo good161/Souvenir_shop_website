@@ -41,13 +41,23 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
             row.querySelector('.variant-image-remove').style.display = 'inline-block';
         }
     });
-    row.querySelector('.variant-image-remove').addEventListener('click', () => {
+    row.querySelector('.variant-image-remove').addEventListener('click', async () => {
         const preview = row.querySelector('.variant-preview');
+        const oldImage = preview.getAttribute('data-saved-url') || preview.src;
+        
         preview.src = '';
         preview.style.display = 'none';
         preview.setAttribute('data-saved-url', '');
         row.querySelector('.variant-image-file').value = '';
         row.querySelector('.variant-image-remove').style.display = 'none';
+        
+        if (oldImage) {
+            await fetch('/api/delete-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ imageUrl: oldImage })
+            });
+        }
     });
     row.querySelector('.variant-stock').addEventListener('change', function() {
         row.style.border = this.checked ? '2px solid #22c55e' : '2px solid #e2e8f0';
