@@ -102,4 +102,37 @@ app.patch('/api/products/:id', async (req, res) => {
     res.json({ success: true });
 });
 
+app.post('/api/delete-image', async (req, res) => {
+    const { imageUrl } = req.body;
+    if (!imageUrl || imageUrl.includes('placehold.co')) return res.json({ success: true });
+    
+    try {
+        const parts = imageUrl.split('/');
+        const filename = parts[parts.length - 1].split('.')[0];
+        const publicId = filename;
+        
+        const timestamp = Math.floor(Date.now() / 1000);
+        const apiSecret = 'wXSugPZb_b08BH2rGqq_KoOPA1g';
+        const stringToSign = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
+        const signature = crypto.createHash('sha1').update(stringToSign).digest('hex');
+        
+        const formData = new URLSearchParams();
+        formData.append('public_id', publicId);
+        formData.append('api_key', '377457394998153');
+        formData.append('timestamp', timestamp);
+        formData.append('signature', signature);
+        
+        await fetch('https://api.cloudinary.com/v1_1/sd0mazc2/image/destroy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        });
+        
+        console.log(`[${new Date().toLocaleString('ru-RU')}] Изображение удалено: ${filename}`);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = app;
