@@ -112,14 +112,6 @@ async function saveProduct() {
 
 async function deleteProduct(id) {
     if (confirm('Удалить товар навсегда?')) {
-        const product = products.find(p => p.id === id);
-        if (product && product.image) {
-            await fetch('/api/delete-image', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageUrl: product.image })
-            });
-        }
         await fetch(`/api/products/${id}`, { method: 'DELETE' });
         await loadProductsFromDB();
         updateCategoryButtons();
@@ -218,21 +210,12 @@ function initAdminProducts() {
         }
     });
     
-    document.getElementById('removeMainImage').addEventListener('click', async function() {
-        const oldImage = document.getElementById('productImage').value;
+    document.getElementById('removeMainImage').addEventListener('click', function() {
         document.getElementById('productImage').value = '';
         document.getElementById('imagePreview').src = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
         document.getElementById('productImageFile').value = '';
         document.getElementById('imageError').textContent = '';
         document.getElementById('imageControls').style.display = 'none';
         this.style.display = 'none';
-        
-        if (oldImage) {
-            await fetch('/api/delete-image', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageUrl: oldImage })
-            });
-        }
     });
 }
