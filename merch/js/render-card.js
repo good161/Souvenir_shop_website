@@ -76,6 +76,16 @@ function renderProductCard(product) {
         else card.querySelector('.restore-product-btn').addEventListener('click', (e) => { e.stopPropagation(); restoreProduct(product.id); });
         card.querySelector('.delete-product-btn').addEventListener('click', (e) => { e.stopPropagation(); deleteProduct(product.id); });
     }
-    
+    setTimeout(() => {
+        card.querySelectorAll('.variant-label').forEach(labelSpan => {
+            labelSpan.addEventListener('click', function(e) {
+                const radio = this.closest('label').querySelector('input[type="radio"]');
+                if (radio && !radio.disabled) {
+                    radio.checked = true;
+                    radio.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        });
+    }, 0);
     return card;
 }
