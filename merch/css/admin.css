@@ -210,6 +210,23 @@
     border-color: #e31e24;
 }
 
+.variant-row .variant-label {
+    flex: 1.5 !important;
+    min-width: 80px !important;
+}
+
+.variant-row .variant-price {
+    flex: 0 0 65px !important;
+    min-width: 55px !important;
+    width: 65px !important;
+    max-width: 65px !important;
+}
+
+.variant-row .variant-description {
+    flex: 2.5 !important;
+    min-width: 100px !important;
+}
+
 .variant-row .variant-image-btn {
     background: #475569;
     color: white;
@@ -244,6 +261,7 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
+    position: relative;
 }
 
 .variant-row .variant-stock-label input {
