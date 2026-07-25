@@ -41,8 +41,10 @@ function renderProductCard(product) {
             const out = v.inStock === false;
             const active = firstAvailable && v.label === firstAvailable.label && v.price === firstAvailable.price;
             return `<div class="variant-option ${out ? 'variant-out-of-stock' : ''}">
-                <input type="radio" name="variant-${product.id}" ${active ? 'checked' : ''} data-price="${v.price}" data-image="${getImagePath(v.image) || productImage}" data-description="${v.description || product.description || ''}" ${out ? 'disabled' : ''}>
-                <label class="${out ? 'out-of-stock-label' : ''}"><span>${v.label}${out ? ' (нет в наличии)' : ''}</span></label>
+                <label class="${out ? 'out-of-stock-label' : ''}" style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;flex:1;">
+                    <input type="radio" name="variant-${product.id}" ${active ? 'checked' : ''} data-price="${v.price}" data-image="${getImagePath(v.image) || productImage}" data-description="${v.description || product.description || ''}" ${out ? 'disabled' : ''}>
+                    <span>${v.label}${out ? ' (нет в наличии)' : ''}</span>
+                </label>
             </div>`;
         }).join('')}</div>`;
         priceHtml = `<div class="price" id="price-${product.id}">${firstAvailable ? formatPrice(firstAvailable.price) : ''}</div>`;
@@ -54,7 +56,7 @@ function renderProductCard(product) {
     card.innerHTML = `
         ${isFullyOutOfStock && !isArchived ? '<div class="out-of-stock-badge">Нет в наличии</div>' : ''}
         ${isArchived ? '<div class="out-of-stock-badge archived-badge">В архиве</div>' : ''}
-        <div class="product-image-wrapper"><img src="${escapeHtml(mainImage)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.src='https://placehold.co/400x400/e9eef3/8b9cb0?text=Error'" style="transition: opacity 0.15s;"></div>
+        <div class="product-image-wrapper"><img src="${escapeHtml(mainImage)}" alt="${escapeHtml(product.name)}" loading="lazy" onerror="this.src='https://placehold.co/400x400/e9eef3/8b9cb0?text=Error'"></div>
         <h3>${escapeHtml(product.name)}</h3>
         ${priceHtml}
         ${variantsHtml}
