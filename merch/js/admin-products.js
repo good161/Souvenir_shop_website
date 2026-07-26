@@ -42,7 +42,26 @@ function renderImagePreviews() {
             <button onclick="removeImage(${i})" style="position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:0.6rem;">✕</button>
         </div>
     `).join('');
+    
+    if (currentImages.length < 5) {
+        container.innerHTML += `
+            <label style="width:80px;height:80px;border:2px dashed #e31e24;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#e31e24;font-size:1.5rem;">
+                +
+                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" onchange="addMoreImages(this)" multiple>
+            </label>`;
+    }
+    
     document.getElementById('removeMainImage').style.display = currentImages.length > 0 ? 'inline-block' : 'none';
+}
+
+function addMoreImages(input) {
+    const files = input.files;
+    for (const file of files) {
+        if (currentImages.length >= 5) break;
+        currentImages.push(URL.createObjectURL(file));
+    }
+    renderImagePreviews();
+    input.value = '';
 }
 
 function removeImage(index) {
