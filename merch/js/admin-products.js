@@ -54,6 +54,11 @@ function renderImagePreviews() {
     document.getElementById('removeMainImage').style.display = currentImages.length > 0 ? 'inline-block' : 'none';
 }
 
+function removeImage(index) {
+    currentImages.splice(index, 1);
+    renderImagePreviews();
+}
+
 function addMoreImages(input) {
     const files = input.files;
     for (const file of files) {
@@ -62,11 +67,6 @@ function addMoreImages(input) {
     }
     renderImagePreviews();
     input.value = '';
-}
-
-function removeImage(index) {
-    currentImages.splice(index, 1);
-    renderImagePreviews();
 }
 
 function hideProductModal() {
