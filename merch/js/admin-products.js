@@ -1,4 +1,5 @@
 let isSaving = false;
+let currentImages = [];
 
 function showProductModal(product) {
     editingProductId = product ? product.id : null;
@@ -10,14 +11,20 @@ function showProductModal(product) {
     document.getElementById('productDescription').value = product ? (product.description || '') : '';
     document.getElementById('productInStock').checked = product ? (product.inStock !== false) : true;
     document.getElementById('imageError').textContent = '';
-    document.getElementById('imagePreview').src = product && product.image ? product.image : 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
-    document.getElementById('productImage').value = product ? (product.image || '') : '';
     document.getElementById('productImageFile').value = '';
     
-    const removeBtn = document.getElementById('removeMainImage');
-    if (removeBtn) {
-        removeBtn.style.display = (product && product.image && product.image !== 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image') ? 'inline-block' : 'none';
+    currentImages = [];
+    const imagesPreview = document.getElementById('imagesPreview');
+    imagesPreview.innerHTML = '';
+    
+    if (product) {
+        const images = product.images || (product.image ? [product.image] : []);
+        currentImages = images.filter(img => img && img !== 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image');
+        renderImagePreviews();
     }
+    
+    const removeBtn = document.getElementById('removeMainImage');
+    if (removeBtn) removeBtn.style.display = currentImages.length > 0 ? 'inline-block' : 'none';
     
     document.getElementById('variantsList').innerHTML = '';
     if (product && product.variants && Array.isArray(product.variants)) {
@@ -27,9 +34,37 @@ function showProductModal(product) {
     document.getElementById('productModal').classList.add('show');
 }
 
+function renderImagePreviews() {
+    const container = document.getElementById('imagesPreview');
+    container.innerHTML = currentImages.map((img, i) => `
+        <div style="position:relative;display:inline-block;">
+            <img src="${img}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">
+            <button onclick="removeImage(${i})" style="position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:0.6rem;">✕</button>
+        </div>
+    `).join('');
+    document.getElementById('removeMainImage').style.display = currentImages.length > 0 ? 'inline-block' : 'none';
+}
+
+function removeImage(index) {
+    currentImages.splice(index, 1);
+    renderImagePreviews();
+}
+
 function hideProductModal() {
     document.getElementById('productModal').classList.remove('show');
     editingProductId = null;
+}
+
+async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'chsu_merch');
+    const res = await fetch('https://api.cloudinary.com/v1_1/sd0mazc2/image/upload', { method: 'POST', body: formData });
+    if (res.ok) {
+        const data = await res.json();
+        return data.secure_url;
+    }
+    return null;
 }
 
 async function saveProduct() {
@@ -48,7 +83,6 @@ async function saveProduct() {
         const inStock = document.getElementById('productInStock').checked;
         const variants = await getVariantsFromForm();
         let price = parseInt(document.getElementById('productPrice').value);
-        let image = document.getElementById('productImage').value.trim();
         
         if (!name) { alert('Введите название товара'); return; }
         if (!variants && isNaN(price)) { alert('Введите цену или добавьте варианты'); return; }
@@ -59,13 +93,16 @@ async function saveProduct() {
         
         const imageInput = document.getElementById('productImageFile');
         if (imageInput.files.length > 0) {
-            const uploadedUrl = await uploadToCloudinary(imageInput.files[0]);
-            if (uploadedUrl) image = uploadedUrl;
+            for (const file of imageInput.files) {
+                const uploadedUrl = await uploadToCloudinary(file);
+                if (uploadedUrl) currentImages.push(uploadedUrl);
+            }
         }
         
-        if (!image) image = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
+        const images = currentImages.length > 0 ? currentImages : [];
+        const mainImage = images.length > 0 ? images[0] : 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
         
-        const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image, description, inStock, price, variants };
+        const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image: mainImage, images, description, inStock, price, variants };
         
         await fetch('/api/products', {
             method: 'POST',
@@ -86,14 +123,6 @@ async function saveProduct() {
 
 async function deleteProduct(id) {
     if (confirm('Удалить товар навсегда?')) {
-        const product = products.find(p => p.id === id);
-        if (product && product.image) {
-            await fetch('/api/delete-image', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageUrl: product.image })
-            });
-        }
         await fetch(`/api/products/${id}`, { method: 'DELETE' });
         await loadProductsFromDB();
         updateCategoryButtons();
@@ -124,38 +153,36 @@ function initAdminProducts() {
     document.getElementById('addVariant').addEventListener('click', () => addVariantRow());
     
     document.getElementById('productImageFile').addEventListener('change', function() {
-        const file = this.files[0];
-        if (file) {
-            if (!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)) {
-                document.getElementById('imageError').textContent = 'Допустимые форматы: JPG, PNG, WEBP, GIF';
-                this.value = '';
-                return;
-            }
-            if (file.size > 10 * 1024 * 1024) {
-                document.getElementById('imageError').textContent = 'Максимальный размер файла: 10 МБ';
-                this.value = '';
-                return;
-            }
+        const files = this.files;
+        if (files.length > 0) {
             document.getElementById('imageError').textContent = '';
-            document.getElementById('imagePreview').src = URL.createObjectURL(file);
-            document.getElementById('removeMainImage').style.display = 'inline-block';
+            for (const file of files) {
+                if (!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)) {
+                    document.getElementById('imageError').textContent = 'Допустимые форматы: JPG, PNG, WEBP, GIF';
+                    return;
+                }
+                if (file.size > 10 * 1024 * 1024) {
+                    document.getElementById('imageError').textContent = 'Максимальный размер файла: 10 МБ';
+                    return;
+                }
+                currentImages.push(URL.createObjectURL(file));
+            }
+            renderImagePreviews();
+            this.value = '';
         }
     });
     
     document.getElementById('removeMainImage').addEventListener('click', async function() {
-        const oldImage = document.getElementById('productImage').value;
-        document.getElementById('productImage').value = '';
-        document.getElementById('imagePreview').src = 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
-        document.getElementById('productImageFile').value = '';
-        document.getElementById('imageError').textContent = '';
-        this.style.display = 'none';
-        
-        if (oldImage) {
-            await fetch('/api/delete-image', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageUrl: oldImage })
-            });
+        for (const img of currentImages) {
+            if (img && !img.startsWith('blob:')) {
+                await fetch('/api/delete-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageUrl: img })
+                });
+            }
         }
+        currentImages = [];
+        renderImagePreviews();
     });
 }
