@@ -106,6 +106,16 @@ async function saveProduct() {
         if (variants && variants.length > 0) price = null;
         if (!price && (!variants || variants.length === 0)) price = 0;
         
+        for (let i = 0; i < currentImages.length; i++) {
+            if (currentImages[i].startsWith('blob:')) {
+                const response = await fetch(currentImages[i]);
+                const blob = await response.blob();
+                const file = new File([blob], 'image.jpg', { type: blob.type });
+                const uploadedUrl = await uploadToCloudinary(file);
+                if (uploadedUrl) currentImages[i] = uploadedUrl;
+            }
+        }
+        
         const imageInput = document.getElementById('productImageFile');
         if (imageInput.files.length > 0) {
             for (const file of imageInput.files) {
