@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: (process.env.DATABASE_URL || '').replace('?sslmode=require', ''),
     ssl: { rejectUnauthorized: false }
 });
 
