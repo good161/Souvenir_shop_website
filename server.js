@@ -66,7 +66,9 @@ app.get('/api/products', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM products ORDER BY created_at DESC');
         res.json(result.rows.map(p => ({
-            id: p.id, name: p.name, category: p.category, image: p.image,
+            id: p.id, name: p.name, category: p.category, 
+            image: p.image,
+            images: p.images || [],
             price: p.price, description: p.description, inStock: p.in_stock,
             variants: p.variants,
             archived: p.archived
@@ -78,12 +80,12 @@ app.get('/api/products', async (req, res) => {
 
 app.post('/api/products', async (req, res) => {
     try {
-        const { id, name, category, image, price, description, inStock, variants } = req.body;
+        const { id, name, category, image, images, price, description, inStock, variants } = req.body;
         await pool.query(
-            `INSERT INTO products (id, name, category, image, price, description, in_stock, variants) 
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8) 
-             ON CONFLICT (id) DO UPDATE SET name=$2, category=$3, image=$4, price=$5, description=$6, in_stock=$7, variants=$8`,
-            [String(id), name, category, image, price, description, inStock, variants ? JSON.stringify(variants) : null]
+            `INSERT INTO products (id, name, category, image, images, price, description, in_stock, variants) 
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) 
+             ON CONFLICT (id) DO UPDATE SET name=$2, category=$3, image=$4, images=$5, price=$6, description=$7, in_stock=$8, variants=$9`,
+            [String(id), name, category, image, images ? JSON.stringify(images) : '[]', price, description, inStock, variants ? JSON.stringify(variants) : null]
         );
         res.json({ success: true });
     } catch (err) {
