@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname)));
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: false
+    ssl: { rejectUnauthorized: false }
 });
 
 function hashPassword(password) {
