@@ -10,8 +10,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL || 'postgres://postgres.atzspalpmoijomeccjzw:P0OqqcN0gyc8mBz6@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require&supa=base-pooler.x',
-    ssl: { rejectUnauthorized: true }
+    host: 'aws-0-us-east-1.pooler.supabase.com',
+    port: 6543,
+    user: 'postgres.atzspalpmoijomeccjzw',
+    password: 'P0OqqcN0gyc8mBz6',
+    database: 'postgres',
+    ssl: { rejectUnauthorized: false }
 });
 
 function hashPassword(password) {
