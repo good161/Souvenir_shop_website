@@ -175,6 +175,39 @@
     color: #e31e24;
 }
 
+.gallery-nav {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0,0,0,0.5);
+    padding: 0.3rem;
+    border-radius: 0 0 12px 12px;
+}
+
+.gallery-arrow {
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1e293b;
+}
+
+.gallery-counter {
+    color: white;
+    font-size: 0.75rem;
+}
+
 @media (max-width: 480px) {
     .product-card {
         padding: 0.6rem !important;
