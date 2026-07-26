@@ -79,13 +79,12 @@
         <div class="modal-content">
             <h3 id="productModalTitle">Добавить товар</h3>
             <input type="hidden" id="productId">
-            <input type="hidden" id="productImage">
             <input type="text" id="productName" placeholder="Название товара" class="modal-input">
             <input type="text" id="productCategoryInput" placeholder="Категория" class="modal-input" list="categorySuggestions">
             <datalist id="categorySuggestions"></datalist>
-            <input type="file" id="productImageFile" accept="image/jpeg,image/png,image/webp,image/gif" class="modal-input">
-            <img id="imagePreview" src="https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image" style="width:100px;height:100px;object-fit:contain;margin:0.5rem 0;border-radius:8px;">
-            <button id="removeMainImage" class="modal-btn small danger" style="display:none;margin-bottom:0.5rem;">Удалить фото</button>
+            <input type="file" id="productImageFile" accept="image/jpeg,image/png,image/webp,image/gif" class="modal-input" multiple>
+            <div id="imagesPreview" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin:0.5rem 0;"></div>
+            <button id="removeMainImage" class="modal-btn small danger" style="display:none;margin-bottom:0.5rem;">Удалить все фото</button>
             <p id="imageError" style="color:#ef4444;font-size:0.75rem;"></p>
             <input type="number" id="productPrice" placeholder="Цена" class="modal-input">
             <input type="text" id="productDescription" placeholder="Описание" class="modal-input">
