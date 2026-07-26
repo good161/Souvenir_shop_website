@@ -118,7 +118,8 @@ async function saveProduct() {
             }
         }
         
-        const images = currentImages.length > 0 ? currentImages : [];
+        const cleanImages = currentImages.filter(img => img && !img.startsWith('blob:'));
+        const images = cleanImages.length > 0 ? cleanImages : [];
         const mainImage = images.length > 0 ? images[0] : 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
         
         const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image: mainImage, images, description, inStock, price, variants };
