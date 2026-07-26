@@ -44,7 +44,7 @@ function renderProductCard(product) {
             const active = firstAvailable && v.label === firstAvailable.label && v.price === firstAvailable.price;
             return `<div class="variant-option ${out ? 'variant-out-of-stock' : ''}">
                 <label class="${out ? 'out-of-stock-label' : ''}" style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;flex:1;">
-                    <input type="radio" name="variant-${product.id}" ${active ? 'checked' : ''} data-price="${v.price}" data-description="${v.description || product.description || ''}" ${out ? 'disabled' : ''}>
+                    <input type="radio" name="variant-${product.id}" ${active ? 'checked' : ''} data-price="${v.price}" data-image="${getImagePath(v.image) || productImage}" data-description="${v.description || product.description || ''}" ${out ? 'disabled' : ''}>
                     <span>${v.label}${out ? ' (нет в наличии)' : ''}</span>
                 </label>
             </div>`;
