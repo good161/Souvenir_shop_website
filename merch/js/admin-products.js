@@ -39,17 +39,25 @@ function renderImagePreviews() {
     container.innerHTML = currentImages.map((img, i) => `
         <div style="position:relative;display:inline-block;">
             <img src="${img}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">
-            <button onclick="removeImage(${i})" style="position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:0.6rem;">✕</button>
+            <button class="remove-image-btn" data-index="${i}" style="position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:0.6rem;">✕</button>
         </div>
     `).join('');
     
     if (currentImages.length < 5) {
-        container.innerHTML += `
-            <label style="width:80px;height:80px;border:2px dashed #e31e24;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#e31e24;font-size:1.5rem;">
-                +
-                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" onchange="addMoreImages(this)" multiple>
-            </label>`;
+        const label = document.createElement('label');
+        label.style.cssText = 'width:80px;height:80px;border:2px dashed #e31e24;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#e31e24;font-size:1.5rem;';
+        label.innerHTML = '+<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" multiple>';
+        label.querySelector('input').addEventListener('change', function() {
+            addMoreImages(this);
+        });
+        container.appendChild(label);
     }
+    
+    container.querySelectorAll('.remove-image-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            removeImage(parseInt(this.dataset.index));
+        });
+    });
     
     document.getElementById('removeMainImage').style.display = currentImages.length > 0 ? 'inline-block' : 'none';
 }
@@ -72,18 +80,6 @@ function addMoreImages(input) {
 function hideProductModal() {
     document.getElementById('productModal').classList.remove('show');
     editingProductId = null;
-}
-
-async function uploadToCloudinary(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'chsu_merch');
-    const res = await fetch('https://api.cloudinary.com/v1_1/sd0mazc2/image/upload', { method: 'POST', body: formData });
-    if (res.ok) {
-        const data = await res.json();
-        return data.secure_url;
-    }
-    return null;
 }
 
 async function saveProduct() {
