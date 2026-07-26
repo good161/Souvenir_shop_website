@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname)));
 
 const pool = new Pool({
     connectionString: process.env.POSTGRES_URL || 'postgres://postgres.atzspalpmoijomeccjzw:P0OqqcN0gyc8mBz6@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require&supa=base-pooler.x',
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: true }
 });
 
 function hashPassword(password) {
