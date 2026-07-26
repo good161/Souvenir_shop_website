@@ -11,7 +11,7 @@ app.use(express.static(path.join(__dirname)));
 
 const pool = new Pool({
     connectionString: 'postgresql://neondb_owner:npg_Pli9EQvCVTB0@ep-cold-flower-awpneumx-pooler.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require',
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false, sslmode: 'require' }
 });
 
 function hashPassword(password) {
