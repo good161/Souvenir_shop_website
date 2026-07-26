@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_TnEuyQt2RfZ8@ep-cold-flower-awpneumx-pooler.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require',
+    connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 
@@ -128,7 +128,6 @@ app.post('/api/delete-image', async (req, res) => {
             body: formData.toString()
         });
         
-        console.log(`[${new Date().toLocaleString('ru-RU')}] Изображение удалено: ${filename}`);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
