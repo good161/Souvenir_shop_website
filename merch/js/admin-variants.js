@@ -20,7 +20,9 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
         <button class="remove-variant" style="flex-shrink:0;">✕</button>
     `;
     
-    row.querySelector('.remove-variant').addEventListener('click', () => row.remove());
+    row.querySelector('.remove-variant').addEventListener('click', () => {
+        if (confirm('Удалить этот вариант?')) row.remove();
+    });
     row.querySelector('.variant-up').addEventListener('click', () => {
         const prev = row.previousElementSibling;
         if (prev && prev.classList.contains('variant-row')) container.insertBefore(row, prev);
@@ -42,21 +44,23 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
         }
     });
     row.querySelector('.variant-image-remove').addEventListener('click', async () => {
-        const preview = row.querySelector('.variant-preview');
-        const oldImage = preview.getAttribute('data-saved-url') || preview.src;
-        
-        preview.src = '';
-        preview.style.display = 'none';
-        preview.setAttribute('data-saved-url', '');
-        row.querySelector('.variant-image-file').value = '';
-        row.querySelector('.variant-image-remove').style.display = 'none';
-        
-        if (oldImage) {
-            await fetch('/api/delete-image', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ imageUrl: oldImage })
-            });
+        if (confirm('Удалить фото варианта?')) {
+            const preview = row.querySelector('.variant-preview');
+            const oldImage = preview.getAttribute('data-saved-url') || preview.src;
+            
+            preview.src = '';
+            preview.style.display = 'none';
+            preview.setAttribute('data-saved-url', '');
+            row.querySelector('.variant-image-file').value = '';
+            row.querySelector('.variant-image-remove').style.display = 'none';
+            
+            if (oldImage) {
+                await fetch('/api/delete-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ imageUrl: oldImage })
+                });
+            }
         }
     });
     row.querySelector('.variant-stock').addEventListener('change', function() {
