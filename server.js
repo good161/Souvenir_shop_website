@@ -114,8 +114,9 @@ app.post('/api/delete-image', async (req, res) => {
     
     try {
         const parts = imageUrl.split('/');
-        const filename = parts[parts.length - 1].split('.')[0];
-        const publicId = filename;
+        const uploadIndex = parts.indexOf('upload');
+        const pathAfterUpload = parts.slice(uploadIndex + 2).join('/');
+        const publicId = pathAfterUpload.split('.')[0];
         
         const timestamp = Math.floor(Date.now() / 1000);
         const apiSecret = 'wXSugPZb_b08BH2rGqq_KoOPA1g';
@@ -128,14 +129,18 @@ app.post('/api/delete-image', async (req, res) => {
         formData.append('timestamp', timestamp);
         formData.append('signature', signature);
         
-        await fetch('https://api.cloudinary.com/v1_1/sd0mazc2/image/destroy', {
+        const response = await fetch('https://api.cloudinary.com/v1_1/sd0mazc2/image/destroy', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: formData.toString()
         });
         
+        const result = await response.json();
+        console.log('Cloudinary delete:', result);
+        
         res.json({ success: true });
     } catch (err) {
+        console.error('Delete error:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
