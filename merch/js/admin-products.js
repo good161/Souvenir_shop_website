@@ -40,6 +40,10 @@ function renderImagePreviews() {
         <div style="position:relative;display:inline-block;">
             <img src="${img}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">
             <button class="remove-image-btn" data-index="${i}" style="position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:0.6rem;">✕</button>
+            <div style="display:flex;justify-content:center;gap:2px;margin-top:2px;">
+                <button class="move-left-btn" data-index="${i}" ${i === 0 ? 'disabled' : ''} style="background:#64748b;color:white;border:none;border-radius:3px;cursor:pointer;font-size:0.5rem;padding:1px 4px;">◀</button>
+                <button class="move-right-btn" data-index="${i}" ${i === currentImages.length - 1 ? 'disabled' : ''} style="background:#64748b;color:white;border:none;border-radius:3px;cursor:pointer;font-size:0.5rem;padding:1px 4px;">▶</button>
+            </div>
         </div>
     `).join('');
     
@@ -56,6 +60,26 @@ function renderImagePreviews() {
     container.querySelectorAll('.remove-image-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             removeImage(parseInt(this.dataset.index));
+        });
+    });
+    
+    container.querySelectorAll('.move-left-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = parseInt(this.dataset.index);
+            if (index > 0) {
+                [currentImages[index], currentImages[index - 1]] = [currentImages[index - 1], currentImages[index]];
+                renderImagePreviews();
+            }
+        });
+    });
+
+    container.querySelectorAll('.move-right-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = parseInt(this.dataset.index);
+            if (index < currentImages.length - 1) {
+                [currentImages[index], currentImages[index + 1]] = [currentImages[index + 1], currentImages[index]];
+                renderImagePreviews();
+            }
         });
     });
     
