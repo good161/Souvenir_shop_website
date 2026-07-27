@@ -59,7 +59,9 @@ function renderImagePreviews() {
     
     container.querySelectorAll('.remove-image-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            removeImage(parseInt(this.dataset.index));
+            if (confirm('Удалить это фото?')) {
+                removeImage(parseInt(this.dataset.index));
+            }
         });
     });
     
@@ -223,16 +225,18 @@ function initAdminProducts() {
     });
     
     document.getElementById('removeMainImage').addEventListener('click', async function() {
-        for (const img of currentImages) {
-            if (img && !img.startsWith('blob:')) {
-                await fetch('/api/delete-image', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ imageUrl: img })
-                });
+        if (confirm('Удалить ВСЕ фото?')) {
+            for (const img of currentImages) {
+                if (img && !img.startsWith('blob:')) {
+                    await fetch('/api/delete-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageUrl: img })
+                    });
+                }
             }
+            currentImages = [];
+            renderImagePreviews();
         }
-        currentImages = [];
-        renderImagePreviews();
     });
 }
