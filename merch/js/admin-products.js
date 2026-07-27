@@ -58,9 +58,9 @@ function renderImagePreviews() {
     }
     
     container.querySelectorAll('.remove-image-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', async function() {
             if (confirm('Удалить это фото?')) {
-                removeImage(parseInt(this.dataset.index));
+                await removeImage(parseInt(this.dataset.index));
             }
         });
     });
