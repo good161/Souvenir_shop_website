@@ -88,7 +88,15 @@ function renderImagePreviews() {
     document.getElementById('removeMainImage').style.display = currentImages.length > 0 ? 'inline-block' : 'none';
 }
 
-function removeImage(index) {
+async function removeImage(index) {
+    const img = currentImages[index];
+    if (img && !img.startsWith('blob:')) {
+        await fetch('/api/delete-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl: img })
+        });
+    }
     currentImages.splice(index, 1);
     renderImagePreviews();
 }
@@ -175,6 +183,30 @@ async function saveProduct() {
 
 async function deleteProduct(id) {
     if (confirm('Удалить товар навсегда?')) {
+        const product = products.find(p => p.id === id);
+        if (product) {
+            const allImages = product.images || (product.image ? [product.image] : []);
+            for (const img of allImages) {
+                if (img && !img.includes('placehold.co') && !img.startsWith('blob:')) {
+                    await fetch('/api/delete-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageUrl: img })
+                    });
+                }
+            }
+            if (product.variants && Array.isArray(product.variants)) {
+                for (const v of product.variants) {
+                    if (v.image && !v.image.includes('placehold.co') && !v.image.startsWith('blob:')) {
+                        await fetch('/api/delete-image', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ imageUrl: v.image })
+                        });
+                    }
+                }
+            }
+        }
         await fetch(`/api/products/${id}`, { method: 'DELETE' });
         await loadProductsFromDB();
         updateCategoryButtons();
