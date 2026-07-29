@@ -10,7 +10,10 @@ async function loadAdmins() {
         ${admins.map(a => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;">
             <span>${a.username} (${a.role})</span>
-            ${a.role !== 'Protoadmin' ? `<button class="modal-btn small danger" onclick="deleteAdmin(${a.id})">🗑️</button>` : ''}
+            <div style="display:flex;gap:0.3rem;">
+                ${a.role === 'Protoadmin' ? `<button class="modal-btn small" onclick="showChangePasswordModal()">🔑</button>` : ''}
+                ${a.role !== 'Protoadmin' ? `<button class="modal-btn small danger" onclick="deleteAdmin(${a.id})">🗑️</button>` : ''}
+            </div>
         </div>
         `).join('')}
     `;
@@ -36,6 +39,34 @@ async function deleteAdmin(id) {
     }
 }
 
+function showChangePasswordModal() {
+    document.getElementById('changePasswordModal').classList.add('show');
+    document.getElementById('newPassword').value = '';
+}
+
+function hideChangePasswordModal() {
+    document.getElementById('changePasswordModal').classList.remove('show');
+}
+
+async function changePassword() {
+    const newPassword = document.getElementById('newPassword').value.trim();
+    if (!newPassword) return alert('Введите новый пароль');
+    
+    await fetch('/api/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword })
+    });
+    
+    hideChangePasswordModal();
+    alert('Пароль изменён. Войдите заново.');
+    isAdmin = false;
+    adminRole = '';
+    localStorage.removeItem('isAdmin');
+    document.getElementById('adminBtn').classList.remove('active');
+    renderProducts(products);
+}
+
 function showAdminsModal() { document.getElementById('adminsModal').classList.add('show'); loadAdmins(); }
 function hideAdminsModal() { document.getElementById('adminsModal').classList.remove('show'); }
 
@@ -43,4 +74,6 @@ function initAdminManagers() {
     document.getElementById('showAdminsBtn').addEventListener('click', showAdminsModal);
     document.getElementById('closeAdminsBtn').addEventListener('click', hideAdminsModal);
     document.getElementById('addAdminBtn').addEventListener('click', addAdmin);
+    document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
+    document.getElementById('closeChangePasswordBtn').addEventListener('click', hideChangePasswordModal);
 }
