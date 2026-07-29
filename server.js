@@ -66,6 +66,17 @@ app.delete('/api/admins/:id', async (req, res) => {
     }
 });
 
+app.post('/api/change-password', async (req, res) => {
+    const { password } = req.body;
+    try {
+        const hash = hashPassword(password);
+        await pool.query("UPDATE admins SET password_hash = $1 WHERE role = 'Protoadmin'", [hash]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.get('/api/products', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM products ORDER BY created_at DESC');
