@@ -23,7 +23,7 @@ function renderProductCard(product) {
     
     let mainImage = productImage;
     let mainDescription = product.description || '';
-    let priceHtml = `<div class="price">${product.price !== null && product.price !== undefined ? formatPrice(product.price) : ''}</div>`;
+    let priceHtml = `<div class="price">${product.price !== null && product.price !== undefined && product.price !== 0 ? formatPrice(product.price) : ''}</div>`;
     let variantsHtml = '';
     let galleryHtml = '';
     
@@ -49,7 +49,7 @@ function renderProductCard(product) {
                 </label>
             </div>`;
         }).join('')}</div>`;
-        priceHtml = `<div class="price" id="price-${product.id}">${firstAvailable ? formatPrice(firstAvailable.price) : ''}</div>`;
+        priceHtml = `<div class="price" id="price-${product.id}">${firstAvailable && firstAvailable.price !== 0 ? formatPrice(firstAvailable.price) : ''}</div>`;
     }
     
     if (allImages.length > 1) {
