@@ -1,5 +1,5 @@
 async function loadAdmins() {
-    const res = await fetch('/api/admins');
+    const res = await fetch('/api/admins', { headers: getAuthHeaders() });
     const admins = await res.json();
     const managerCount = admins.filter(a => a.role === 'manager').length;
     
@@ -26,7 +26,11 @@ async function addAdmin() {
     
     if (!username || !password) return alert('Заполните все поля');
     
-    await fetch('/api/admins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password, role }) });
+    await fetch('/api/admins', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ username, password, role })
+    });
     document.getElementById('newAdminUsername').value = '';
     document.getElementById('newAdminPassword').value = '';
     loadAdmins();
@@ -34,7 +38,10 @@ async function addAdmin() {
 
 async function deleteAdmin(id) {
     if (confirm('Удалить администратора?')) {
-        await fetch(`/api/admins/${id}`, { method: 'DELETE' });
+        await fetch(`/api/admins/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
         loadAdmins();
     }
 }
@@ -54,7 +61,7 @@ async function changePassword() {
     
     await fetch('/api/change-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ password: newPassword })
     });
     
@@ -63,6 +70,9 @@ async function changePassword() {
     isAdmin = false;
     adminRole = '';
     localStorage.removeItem('isAdmin');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('adminRole');
+    authToken = '';
     document.getElementById('adminBtn').classList.remove('active');
     renderProducts(products);
 }
