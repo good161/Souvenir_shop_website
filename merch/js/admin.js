@@ -15,16 +15,14 @@ function initAdmin() {
             isAdmin = false;
             adminRole = '';
             showArchived = false;
-            authToken = '';
             localStorage.removeItem('isAdmin');
-            localStorage.removeItem('authToken');
             localStorage.removeItem('adminRole');
             renderProducts(products);
         } else {
             showLoginModal();
         }
     });
-
+    
     initAdminAuth();
     initAdminProducts();
     initAdminManagers();
