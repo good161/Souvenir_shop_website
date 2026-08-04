@@ -20,8 +20,19 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
         <button class="remove-variant" style="flex-shrink:0;">✕</button>
     `;
     
-    row.querySelector('.remove-variant').addEventListener('click', () => {
-        if (confirm('Удалить этот вариант?')) row.remove();
+    row.querySelector('.remove-variant').addEventListener('click', async () => {
+        if (confirm('Удалить этот вариант?')) {
+            const preview = row.querySelector('.variant-preview');
+            const oldImage = preview.getAttribute('data-saved-url') || preview.src;
+            if (oldImage && !oldImage.startsWith('blob:') && !oldImage.includes('placehold.co')) {
+                await fetch('/api/delete-image', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ imageUrl: oldImage })
+                });
+            }
+            row.remove();
+        }
     });
     row.querySelector('.variant-up').addEventListener('click', () => {
         const prev = row.previousElementSibling;
@@ -54,10 +65,10 @@ function addVariantRow(label = '', price = '', inStock = true, image = '', descr
             row.querySelector('.variant-image-file').value = '';
             row.querySelector('.variant-image-remove').style.display = 'none';
             
-            if (oldImage) {
+            if (oldImage && !oldImage.startsWith('blob:')) {
                 await fetch('/api/delete-image', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: getAuthHeaders(),
                     body: JSON.stringify({ imageUrl: oldImage })
                 });
             }
