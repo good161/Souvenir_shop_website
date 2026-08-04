@@ -1,3 +1,5 @@
+let authToken = '';
+
 function showLoginModal() {
     document.getElementById('loginModal').classList.add('show');
     document.getElementById('loginInput').value = '';
@@ -9,7 +11,23 @@ function hideLoginModal() {
     document.getElementById('loginModal').classList.remove('show');
 }
 
+function getAuthHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+    };
+}
+
 function initAdminAuth() {
+    const savedToken = localStorage.getItem('authToken');
+    const savedRole = localStorage.getItem('adminRole');
+    if (savedToken) {
+        authToken = savedToken;
+        isAdmin = true;
+        adminRole = savedRole || '';
+        document.getElementById('adminBtn').classList.add('active');
+    }
+
     document.getElementById('loginSubmit').addEventListener('click', async () => {
         const login = document.getElementById('loginInput').value;
         const password = document.getElementById('passwordInput').value;
@@ -25,11 +43,13 @@ function initAdminAuth() {
             const data = await res.json();
 
             if (data.success) {
+                authToken = data.token;
                 isAdmin = true;
                 adminRole = data.role;
-                localStorage.setItem('isAdmin', 'true');
+                localStorage.setItem('authToken', authToken);
                 localStorage.setItem('adminRole', data.role);
-                
+                localStorage.setItem('isAdmin', 'true');
+
                 errorElement.classList.remove('show');
                 document.getElementById('adminBtn').classList.add('active');
                 hideLoginModal();
@@ -40,11 +60,10 @@ function initAdminAuth() {
                 errorElement.classList.add('show');
             }
         } catch (err) {
-            console.error(err);
-            errorElement.textContent = 'Ошибка сервера. Попробуйте позже.';
+            errorElement.textContent = 'Ошибка сервера';
             errorElement.classList.add('show');
         }
     });
-    
+
     document.getElementById('loginCancel').addEventListener('click', hideLoginModal);
 }
