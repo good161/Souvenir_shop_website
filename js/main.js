@@ -42,9 +42,7 @@
                 setTimeout(() => {
                     window.location.href = info.url;
                 }, 500);
-            } else {
-                showMessage(`🔹 ${info.name} — раздел в разработке`);
-            }
+            } 
         });
     });
 
