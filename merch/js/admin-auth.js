@@ -48,7 +48,22 @@ function initAdminAuth() {
     document.getElementById('loginCancel').addEventListener('click', hideLoginModal);
     checkAdminSession(); 
 }
-
+function checkAdminSession() { 
+    const savedAdmin = sessionStorage.getItem('isAdmin'); 
+    const savedRole = sessionStorage.getItem('adminRole'); 
+    
+    if (savedAdmin === 'true' && savedRole) {  
+        isAdmin = true; 
+        adminRole = savedRole; 
+  
+        document.getElementById('adminBtn').classList.add('active'); 
+        updateCategoryButtons(); 
+        renderProducts(products); 
+        return true; 
+    } 
+    return false; 
+}
+/*  если хочешь, чтоб и при закрытии вкладки работало, но это вообще не сейвово
 function checkAdminSession() {
         const savedAdmin = localStorage.getItem('isAdmin');
     const savedRole = localStorage.getItem('adminRole');
@@ -65,4 +80,4 @@ function checkAdminSession() {
         return true;
     }
     return false;
-}
+}*/
