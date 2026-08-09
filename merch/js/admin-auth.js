@@ -54,14 +54,11 @@ function checkAdminSession() {
     const savedRole = localStorage.getItem('adminRole');
 
     if (savedAdmin === 'true' && savedRole) {
-        // Восстанавливаем статус админа
         isAdmin = true;
         adminRole = savedRole;
         
-        // Показываем активную кнопку админки
         document.getElementById('adminBtn').classList.add('active');
         
-        // Обновляем интерфейс (как после логина)
         updateCategoryButtons();
         renderProducts(products);
         
