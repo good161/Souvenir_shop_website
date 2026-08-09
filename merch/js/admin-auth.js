@@ -46,23 +46,4 @@ function initAdminAuth() {
     });
     
     document.getElementById('loginCancel').addEventListener('click', hideLoginModal);
-    checkAdminSession(); 
-}
-
-function checkAdminSession() {
-        const savedAdmin = localStorage.getItem('isAdmin');
-    const savedRole = localStorage.getItem('adminRole');
-
-    if (savedAdmin === 'true' && savedRole) {
-        isAdmin = true;
-        adminRole = savedRole;
-        
-        document.getElementById('adminBtn').classList.add('active');
-        
-        updateCategoryButtons();
-        renderProducts(products);
-
-        return true;
-    }
-    return false;
 }
