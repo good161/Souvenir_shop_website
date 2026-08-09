@@ -47,3 +47,25 @@ function initAdminAuth() {
     
     document.getElementById('loginCancel').addEventListener('click', hideLoginModal);
 }
+
+function checkAdminSession() {
+        const savedAdmin = localStorage.getItem('isAdmin');
+    const savedRole = localStorage.getItem('adminRole');
+
+    if (savedAdmin === 'true' && savedRole) {
+        // Восстанавливаем статус админа
+        isAdmin = true;
+        adminRole = savedRole;
+        
+        // Показываем активную кнопку админки
+        document.getElementById('adminBtn').classList.add('active');
+        
+        // Обновляем интерфейс (как после логина)
+        updateCategoryButtons();
+        renderProducts(products);
+        
+        console.log('С ВОЗВРАЩЕНИЕМ ВЕЛИКИЙ АДМИН');
+        return true;
+    }
+    return false;
+}
