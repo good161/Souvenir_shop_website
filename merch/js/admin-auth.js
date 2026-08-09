@@ -61,8 +61,7 @@ function checkAdminSession() {
         
         updateCategoryButtons();
         renderProducts(products);
-        
-        console.log('С ВОЗВРАЩЕНИЕМ ВЕЛИКИЙ АДМИН');
+
         return true;
     }
     return false;
