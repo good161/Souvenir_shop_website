@@ -46,6 +46,7 @@ function initAdminAuth() {
     });
     
     document.getElementById('loginCancel').addEventListener('click', hideLoginModal);
+    checkAdminSession(); 
 }
 
 function checkAdminSession() {
