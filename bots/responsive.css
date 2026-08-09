@@ -19,9 +19,6 @@
     .card-content {
         padding: 1rem;
     }
-    .card-icon {
-        font-size: 1.7rem;
-    }
     .card-link {
         font-size: 0.75rem;
     }
@@ -51,10 +48,6 @@
     }
     .card-content {
         padding: 0.7rem;
-    }
-    .card-icon {
-        font-size: 1.4rem;
-        margin-bottom: 0.3rem;
     }
     .card-title {
         font-size: 0.95rem;
@@ -93,10 +86,6 @@
     .card-content {
         padding: 0.6rem;
     }
-    .card-icon {
-        font-size: 1.2rem;
-        margin-bottom: 0.2rem;
-    }
     .card-title {
         font-size: 0.85rem;
     }
@@ -128,10 +117,6 @@
     }
     .card-content {
         padding: 0.5rem;
-    }
-    .card-icon {
-        font-size: 1.1rem;
-        margin-bottom: 0.2rem;
     }
     .card-title {
         font-size: 0.8rem;
