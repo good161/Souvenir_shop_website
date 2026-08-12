@@ -93,7 +93,7 @@ async function removeImage(index) {
     if (img && !img.startsWith('blob:')) {
         await fetch('/api/delete-image', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ imageUrl: img })
         });
     }
@@ -166,7 +166,7 @@ async function saveProduct() {
         
         await fetch('/api/products', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify(productData)
         });
         
@@ -190,7 +190,7 @@ async function deleteProduct(id) {
                 if (img && !img.includes('placehold.co') && !img.startsWith('blob:')) {
                     await fetch('/api/delete-image', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: getAuthHeaders(),
                         body: JSON.stringify({ imageUrl: img })
                     });
                 }
@@ -200,7 +200,7 @@ async function deleteProduct(id) {
                     if (v.image && !v.image.includes('placehold.co') && !v.image.startsWith('blob:')) {
                         await fetch('/api/delete-image', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: getAuthHeaders(),
                             body: JSON.stringify({ imageUrl: v.image })
                         });
                     }
@@ -209,7 +209,7 @@ async function deleteProduct(id) {
         }
         await fetch(`/api/products/${id}`, {
             method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' }
+            headers: getAuthHeaders()
         });
         await loadProductsFromDB();
         updateCategoryButtons();
@@ -220,7 +220,7 @@ async function deleteProduct(id) {
 async function archiveProduct(id) {
     await fetch(`/api/products/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ archived: true, inStock: false })
     });
     await loadProductsFromDB();
@@ -230,7 +230,7 @@ async function archiveProduct(id) {
 async function restoreProduct(id) {
     await fetch(`/api/products/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ archived: false })
     });
     await loadProductsFromDB();
@@ -273,7 +273,7 @@ function initAdminProducts() {
                 if (img && !img.startsWith('blob:')) {
                     await fetch('/api/delete-image', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: getAuthHeaders(),
                         body: JSON.stringify({ imageUrl: img })
                     });
                 }
