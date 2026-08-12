@@ -93,7 +93,6 @@
     function bindCardEvents() {
         document.querySelectorAll('.service-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                if (card.classList.contains('editing')) return;
                 if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
                 const url = card.getAttribute('data-url');
                 if (url) { showMessage('Загрузка...'); setTimeout(() => { window.location.href = url; }, 500); }
@@ -113,41 +112,12 @@
             editBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const cardEl = title.closest('.service-card');
-                
-                if (cardEl.classList.contains('editing')) {
-                    const newName = cardEl.querySelector('.card-title-input').value;
-                    const newDesc = cardEl.querySelector('.card-desc-input').value;
-                    const newUrl = cardEl.querySelector('.card-url-input').value;
-                    const cardId = cardEl.getAttribute('data-service');
-                    
-                    fetch(`/api/cards/${cardId}`, {
-                        method: 'PATCH',
-                        headers: getAuthHeaders(),
-                        body: JSON.stringify({ name: newName, description: newDesc, url: newUrl })
-                    }).then(() => loadCards());
-                    
-                    cardEl.classList.remove('editing');
-                    cardEl.style.cursor = 'pointer';
-                    editBtn.textContent = '✏️';
-                    loadCards();
-                    return;
-                }
-                
-                cardEl.classList.add('editing');
-                cardEl.style.cursor = 'default';
-                editBtn.textContent = '✓';
-                
-                const name = title.childNodes[0].textContent;
-                const desc = cardEl.querySelector('.card-description').textContent;
-                const url = cardEl.getAttribute('data-url') || '';
-                
-                title.innerHTML = `<input type="text" class="card-title-input" value="${escapeHtml(name)}" style="width:100%;font-size:1.6rem;font-weight:700;border:none;border-bottom:2px solid #e31e24;outline:none;background:transparent;">`;
-                cardEl.querySelector('.card-description').innerHTML = `<input type="text" class="card-desc-input" value="${escapeHtml(desc)}" style="width:100%;font-size:0.92rem;border:none;border-bottom:2px solid #e31e24;outline:none;background:transparent;color:#4b4b4b;">`;
-                
-                const linkEl = cardEl.querySelector('.card-link');
-                if (linkEl) {
-                    linkEl.innerHTML = `<input type="text" class="card-url-input" value="${escapeHtml(url)}" style="width:100%;font-size:0.85rem;border:none;border-bottom:2px solid #e31e24;outline:none;background:transparent;color:#e31e24;">`;
-                }
+                const cardId = cardEl.getAttribute('data-service');
+                document.getElementById('editCardId').value = cardId;
+                document.getElementById('editCardName').value = title.childNodes[0].textContent;
+                document.getElementById('editCardDescription').value = cardEl.querySelector('.card-description').textContent;
+                document.getElementById('editCardUrl').value = cardEl.getAttribute('data-url') || '';
+                document.getElementById('editCardModal').style.display = 'flex';
             });
         });
     }
@@ -168,6 +138,17 @@
         loadChannelsForEdit();
         loadChannels();
     });
+
+    document.getElementById('saveCardBtn').addEventListener('click', async () => {
+        const id = document.getElementById('editCardId').value;
+        const name = document.getElementById('editCardName').value.trim();
+        const description = document.getElementById('editCardDescription').value.trim();
+        const url = document.getElementById('editCardUrl').value.trim();
+        await fetch(`/api/cards/${id}`, { method: 'PATCH', headers: getAuthHeaders(), body: JSON.stringify({ name, description, url }) });
+        document.getElementById('editCardModal').style.display = 'none';
+        loadCards();
+    });
+    document.getElementById('closeEditCardBtn').addEventListener('click', () => document.getElementById('editCardModal').style.display = 'none');
 
     loadChannels();
     loadCards();
