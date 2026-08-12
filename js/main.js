@@ -234,4 +234,16 @@
     document.getElementById('closeLinksEditBtn').addEventListener('click', () => document.getElementById('linksEditModal').style.display = 'none');
 
     // Клик по карточкам
-    document.querySelectorAll('.
+    document.querySelectorAll('.service-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.channel-icon') || e.target.closest('button') || e.target.closest('input') || e.target.closest('span') || e.target.closest('a')) return;
+            const url = card.getAttribute('data-url');
+            if (url) { showMessage('Загрузка...'); setTimeout(() => { window.location.href = url; }, 500); }
+        });
+    });
+
+    loadChannels();
+    loadCards();
+    loadCardLinks('it-services');
+    loadCardLinks('bots');
+})();
