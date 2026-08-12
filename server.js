@@ -180,7 +180,7 @@ app.post('/api/delete-image', authenticateToken, async (req, res) => {
 
 app.get('/api/channels', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM channels ORDER BY id');
+        const result = await pool.query('SELECT * FROM channels ORDER BY display_order, id');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: 'Ошибка сервера' });
@@ -191,6 +191,18 @@ app.post('/api/channels', authenticateToken, async (req, res) => {
     const { name, url, icon } = req.body;
     try {
         await pool.query('INSERT INTO channels (name, url, icon) VALUES ($1,$2,$3)', [name, url, icon || '🌐']);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+app.patch('/api/channels/:id', authenticateToken, async (req, res) => {
+    const { name, url, display_order } = req.body;
+    try {
+        if (name) await pool.query('UPDATE channels SET name = $1 WHERE id = $2', [name, req.params.id]);
+        if (url) await pool.query('UPDATE channels SET url = $1 WHERE id = $2', [url, req.params.id]);
+        if (display_order !== undefined) await pool.query('UPDATE channels SET display_order = $1 WHERE id = $2', [display_order, req.params.id]);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Ошибка сервера' });
