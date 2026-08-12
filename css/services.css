@@ -9,52 +9,81 @@
 .services-page {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 2.2rem 2rem 2.5rem 2rem;
 }
 
-.services-page h1 {
-    font-size: 2rem;
-    margin-bottom: 2rem;
-    color: #1e293b;
+.links-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.8rem;
+    width: 100%;
 }
 
-.service-link-item {
+.service-link-card {
+    background: #ffffff;
+    border-radius: 1.5rem;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 0 0 1px #e5e5e5;
+    transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.25s;
+    overflow: hidden;
+    cursor: pointer;
     display: flex;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    background: white;
-    border-radius: 12px;
-    margin-bottom: 0.5rem;
+    flex-direction: column;
     text-decoration: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.service-link-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+.service-link-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 25px 35px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px #d0d0d0;
 }
 
-.service-link-name {
-    font-weight: 600;
-    color: #1e293b;
-    font-size: 1.1rem;
+.service-link-card .card-accent {
+    height: 6px;
+    width: 100%;
+    background: #e31e24;
+}
+
+.service-link-card .card-content {
+    padding: 1.7rem 1.5rem 1.9rem 1.5rem;
+    display: flex;
+    flex-direction: column;
     flex: 1;
 }
 
-.service-link-desc {
-    color: #64748b;
-    font-size: 0.85rem;
-    margin-right: 1rem;
+.service-link-card .card-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #000000;
+    letter-spacing: -0.3px;
+    margin-bottom: 0.8rem;
+    line-height: 1.2;
 }
 
-.service-link-btn {
-    background: #e31e24;
-    color: white;
-    padding: 0.5rem 1.2rem;
-    border-radius: 8px;
+.service-link-card .card-description {
+    font-size: 0.92rem;
+    color: #4b4b4b;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.service-link-card .card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    color: #e31e24;
+    text-decoration: none;
+    border-bottom: 1.5px solid rgba(227, 30, 36, 0.25);
+    transition: gap 0.2s, border-color 0.2s;
+    width: fit-content;
+    padding-bottom: 2px;
+    margin-top: auto;
+}
+
+.service-link-card:hover .card-link {
+    gap: 0.75rem;
+    border-bottom-color: #e31e24;
+    color: #b11218;
 }
 
 .edit-btn {
@@ -128,4 +157,103 @@
 .channels-btn.primary {
     background: #e31e24;
     color: white;
+}
+
+@media (max-width: 780px) {
+    .services-page {
+        padding: 0.9rem;
+    }
+    .links-grid {
+        gap: 0.9rem;
+    }
+    .service-link-card .card-title {
+        font-size: 1.15rem;
+    }
+    .service-link-card .card-content {
+        padding: 1rem;
+    }
+    .service-link-card .card-description {
+        font-size: 0.75rem;
+    }
+    .service-link-card .card-link {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .links-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.7rem;
+    }
+    .service-link-card {
+        border-radius: 1rem;
+    }
+    .service-link-card .card-accent {
+        height: 4px;
+    }
+    .service-link-card .card-content {
+        padding: 0.7rem;
+    }
+    .service-link-card .card-title {
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
+    }
+    .service-link-card .card-description {
+        font-size: 0.68rem;
+        margin-bottom: 0.5rem;
+    }
+    .service-link-card .card-link {
+        font-size: 0.68rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .links-grid {
+        gap: 0.6rem;
+    }
+    .service-link-card {
+        border-radius: 0.9rem;
+    }
+    .service-link-card .card-content {
+        padding: 0.6rem;
+    }
+    .service-link-card .card-title {
+        font-size: 0.85rem;
+    }
+    .service-link-card .card-description {
+        font-size: 0.63rem;
+        margin-bottom: 0.4rem;
+    }
+    .service-link-card .card-link {
+        font-size: 0.63rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .links-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+    .service-link-card {
+        border-radius: 0.8rem;
+    }
+    .service-link-card .card-accent {
+        height: 3px;
+    }
+    .service-link-card .card-content {
+        padding: 0.5rem;
+    }
+    .service-link-card .card-title {
+        font-size: 0.8rem;
+        margin-bottom: 0.3rem;
+    }
+    .service-link-card .card-description {
+        font-size: 0.6rem;
+        margin-bottom: 0.4rem;
+        line-height: 1.3;
+    }
+    .service-link-card .card-link {
+        font-size: 0.6rem;
+        gap: 0.3rem;
+    }
 }
