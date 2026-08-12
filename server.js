@@ -7,14 +7,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 
-const REQUIRED_ENV = ['DATABASE_URL', 'JWT_SECRET', 'CLOUDINARY_API_SECRET', 'CLOUDINARY_API_KEY', 'CLOUDINARY_CLOUD_NAME'];
-for (const env of REQUIRED_ENV) {
-    if (!process.env[env]) {
-        console.error(`Критическая ошибка: Переменная окружения ${env} не задана!`);
-        process.exit(1);
-    }
-}
-
 const app = express();
 
 app.use(cors({
@@ -25,11 +17,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'chsu-merch-jwt-secret-2026';
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: true }
+    connectionString: process.env.DATABASE_URL || 'postgresql://postgres.atzspalpmoijomeccjzw:P0OqqcN0gyc8mBz6@aws-0-us-east-1.pooler.supabase.com:6543/postgres',
+    ssl: { rejectUnauthorized: false }
 });
 
 function generateToken(user) {
@@ -72,6 +64,7 @@ app.post('/api/login', async (req, res) => {
         const token = generateToken(user);
         res.json({ success: true, token, role: user.role });
     } catch (err) {
+        console.error('Login error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -166,17 +159,17 @@ app.post('/api/delete-image', authenticateToken, async (req, res) => {
         if (!publicId) return res.status(400).json({ error: 'Не удалось определить public_id' });
         
         const timestamp = Math.floor(Date.now() / 1000);
-        const apiSecret = process.env.CLOUDINARY_API_SECRET;
+        const apiSecret = process.env.CLOUDINARY_API_SECRET || 'wXSugPZb_b08BH2rGqq_KoOPA1g';
         const stringToSign = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
         const signature = crypto.createHash('sha1').update(stringToSign).digest('hex');
         
         const formData = new URLSearchParams();
         formData.append('public_id', publicId);
-        formData.append('api_key', process.env.CLOUDINARY_API_KEY);
+        formData.append('api_key', process.env.CLOUDINARY_API_KEY || '377457394998153');
         formData.append('timestamp', timestamp);
         formData.append('signature', signature);
         
-        await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/destroy`, {
+        await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME || 'sd0mazc2'}/image/destroy`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: formData.toString()
