@@ -5,14 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IT-сервисы ЧГУ</title>
     <link rel="stylesheet" href="../css/main.css">
-    <link rel="stylesheet" href="../css/responsive.css">
     <style>
-        .it-services-page {
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            text-decoration: none;
+            color: #e31e24;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        .services-page {
             max-width: 800px;
-            margin: 0 auto;
+            margin: 80px auto 0;
             padding: 2rem;
         }
-        .it-services-page h1 {
+        .services-page h1 {
             font-size: 2rem;
             margin-bottom: 2rem;
             color: #1e293b;
@@ -51,34 +63,82 @@
             font-weight: 600;
             font-size: 0.9rem;
         }
+        .edit-btn {
+            margin-top: 1rem;
+            padding: 0.6rem 1.2rem;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+        }
+        .channels-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .channels-modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            max-width: 700px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .channels-modal-content h3 { font-size: 1.2rem; margin-bottom: 1rem; color: #1e293b; }
+        .channels-input {
+            padding: 0.7rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            outline: none;
+            margin-bottom: 0.5rem;
+        }
+        .channels-input:focus { border-color: #e31e24; }
+        .channels-btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .channels-btn.primary { background: #e31e24; color: white; }
     </style>
 </head>
 <body>
-    <div class="page-wrapper">
-        <a href="../index.html" class="back-button">← На главную</a>
-        
-        <div class="it-services-page">
-            <h1>IT-сервисы ЧГУ</h1>
-            <div id="servicesList">Загрузка...</div>
-            <button id="editServicesBtn" class="channels-btn" style="display:none;margin-top:1rem;">✏️ Редактировать</button>
-        </div>
-
-        <footer class="footer-note">
-            <span>© 2026 ЧГУ | Единая платформа сервисов</span>
-        </footer>
+    <a href="../index.html" class="back-button">← На главную</a>
+    
+    <div class="services-page">
+        <h1>IT-сервисы ЧГУ</h1>
+        <div id="servicesList">Загрузка...</div>
+        <button id="editServicesBtn" class="edit-btn">✏️ Редактировать</button>
     </div>
 
-    <!-- Модалка -->
     <div id="servicesModal" class="channels-modal">
         <div class="channels-modal-content">
             <h3>Редактировать сервисы</h3>
             <div id="servicesEditList"></div>
-            <div class="channels-add-row">
+            <div style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;">
                 <input type="text" id="newServiceName" placeholder="Название" class="channels-input" style="flex:1;">
                 <input type="text" id="newServiceUrl" placeholder="URL" class="channels-input" style="flex:2;">
                 <input type="text" id="newServiceDesc" placeholder="Описание" class="channels-input" style="flex:1;">
             </div>
-            <div class="channels-buttons">
+            <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
                 <button id="addServiceBtn" class="channels-btn primary">Добавить</button>
                 <button id="closeServicesBtn" class="channels-btn">Закрыть</button>
             </div>
