@@ -239,4 +239,45 @@ app.patch('/api/cards/:id', authenticateToken, async (req, res) => {
     }
 });
 
+app.get('/api/card-links/:cardId', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM card_links WHERE card_id = $1 ORDER BY display_order, id', [req.params.cardId]);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+app.post('/api/card-links', authenticateToken, async (req, res) => {
+    const { card_id, name, url, description } = req.body;
+    try {
+        await pool.query('INSERT INTO card_links (card_id, name, url, description) VALUES ($1,$2,$3,$4)', [card_id, name, url, description || '']);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+app.patch('/api/card-links/:id', authenticateToken, async (req, res) => {
+    const { name, url, description, display_order } = req.body;
+    try {
+        if (name) await pool.query('UPDATE card_links SET name = $1 WHERE id = $2', [name, req.params.id]);
+        if (url) await pool.query('UPDATE card_links SET url = $1 WHERE id = $2', [url, req.params.id]);
+        if (description !== undefined) await pool.query('UPDATE card_links SET description = $1 WHERE id = $2', [description, req.params.id]);
+        if (display_order !== undefined) await pool.query('UPDATE card_links SET display_order = $1 WHERE id = $2', [display_order, req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+app.delete('/api/card-links/:id', authenticateToken, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM card_links WHERE id = $1', [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
 module.exports = app;
