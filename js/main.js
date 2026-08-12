@@ -124,7 +124,19 @@
 
     if (localStorage.getItem('isAdmin') === 'true') {
         document.getElementById('editChannelsBtn').style.display = 'inline-block';
-        document.querySelectorAll('.edit-card-btn').forEach(b => b.style.display = 'inline-block');
+        document.querySelectorAll('.card-title').forEach(title => {
+            title.classList.add('editable');
+            title.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const cardEl = title.closest('.service-card');
+                const cardId = cardEl.getAttribute('data-service');
+                document.getElementById('editCardId').value = cardId;
+                document.getElementById('editCardName').value = title.textContent;
+                document.getElementById('editCardDescription').value = cardEl.querySelector('.card-description').textContent;
+                document.getElementById('editCardUrl').value = cardEl.getAttribute('data-url') || '';
+                document.getElementById('editCardModal').style.display = 'flex';
+            });
+        });
     }
 
     document.getElementById('editChannelsBtn').addEventListener('click', function() {
@@ -152,19 +164,6 @@
         document.getElementById('newChannelUrl').value = '';
         loadChannelsForEdit();
         loadChannels();
-    });
-
-    document.querySelectorAll('.edit-card-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const cardId = btn.dataset.card;
-            const cardEl = document.querySelector(`[data-service="${cardId}"]`);
-            document.getElementById('editCardId').value = cardId;
-            document.getElementById('editCardName').value = cardEl.querySelector('.card-title').textContent;
-            document.getElementById('editCardDescription').value = cardEl.querySelector('.card-description').textContent;
-            document.getElementById('editCardUrl').value = cardEl.getAttribute('data-url') || '';
-            document.getElementById('editCardModal').style.display = 'flex';
-        });
     });
 
     document.getElementById('saveCardBtn').addEventListener('click', async () => {
