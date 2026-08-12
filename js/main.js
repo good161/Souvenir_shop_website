@@ -10,10 +10,86 @@
         }, duration);
     }
 
+    // Загрузка каналов из API
+    async function loadChannels() {
+        try {
+            const res = await fetch('/api/channels');
+            const channels = await res.json();
+            const grid = document.getElementById('channelsGrid');
+            
+            if (channels.length === 0) {
+                grid.innerHTML = '<span style="color:#94a3b8;">Нет каналов</span>';
+                return;
+            }
+            
+            grid.innerHTML = channels.map(c => `
+                <a href="${c.url}" target="_blank" class="channel-icon" title="${c.name}">
+                    <span style="font-size:1.5rem;">${c.icon || '🌐'}</span>
+                    <span class="icon-label">${c.name}</span>
+                </a>
+            `).join('');
+        } catch (err) {
+            document.getElementById('channelsGrid').innerHTML = '<span style="color:#94a3b8;">Ошибка загрузки</span>';
+        }
+    }
+
+    async function loadChannelsForEdit() {
+        const res = await fetch('/api/channels');
+        const channels = await res.json();
+        const list = document.getElementById('channelsEditList');
+        
+        list.innerHTML = channels.map(c => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;">
+                <span>${c.icon || '🌐'} ${c.name}</span>
+                <button onclick="deleteChannel(${c.id})" style="background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;padding:0.2rem 0.5rem;">🗑️</button>
+            </div>
+        `).join('');
+    }
+
+    window.deleteChannel = async function(id) {
+        if (confirm('Удалить канал?')) {
+            await fetch(`/api/channels/${id}`, { method: 'DELETE' });
+            loadChannelsForEdit();
+            loadChannels();
+        }
+    };
+
+    document.getElementById('addChannelBtn').addEventListener('click', async function() {
+        const name = document.getElementById('newChannelName').value.trim();
+        const url = document.getElementById('newChannelUrl').value.trim();
+        const icon = document.getElementById('newChannelIcon').value.trim() || '🌐';
+        
+        if (!name || !url) return alert('Заполните название и URL');
+        
+        await fetch('/api/channels', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, url, icon })
+        });
+        
+        document.getElementById('newChannelName').value = '';
+        document.getElementById('newChannelUrl').value = '';
+        loadChannelsForEdit();
+        loadChannels();
+    });
+
+    if (localStorage.getItem('isAdmin') === 'true') {
+        document.getElementById('editChannelsBtn').style.display = 'inline-block';
+    }
+
+    document.getElementById('editChannelsBtn').addEventListener('click', function() {
+        document.getElementById('channelsModal').style.display = 'flex';
+        loadChannelsForEdit();
+    });
+
+    document.getElementById('closeChannelsBtn').addEventListener('click', function() {
+        document.getElementById('channelsModal').style.display = 'none';
+    });
+
     const serviceData = {
         'it-services': { 
             name: 'IT-сервисы', 
-            description: 'Личный кабинет, расписание, электронные заявки' ,
+            description: 'Личный кабинет, расписание, электронные заявки',
             url: 'it-services/index.html'
         },
         'official-channels': { 
@@ -34,6 +110,8 @@
 
     document.querySelectorAll('.service-card').forEach(card => {
         card.addEventListener('click', (e) => {
+            if (e.target.closest('.channel-icon') || e.target.closest('button') || e.target.closest('input')) return;
+            
             const serviceKey = card.getAttribute('data-service');
             const info = serviceData[serviceKey];
             
@@ -42,9 +120,10 @@
                 setTimeout(() => {
                     window.location.href = info.url;
                 }, 500);
-            } 
+            }
         });
     });
 
+    loadChannels();
     console.log('🚀 ЧГУ Дашборд сервисов активирован');
 })();
