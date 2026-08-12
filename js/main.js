@@ -10,7 +10,14 @@
         }, duration);
     }
 
-    // Загрузка каналов из API
+    function getAuthHeaders() {
+        const token = localStorage.getItem('authToken');
+        return {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        };
+    }
+
     async function loadChannels() {
         try {
             const res = await fetch('/api/channels');
@@ -48,7 +55,10 @@
 
     window.deleteChannel = async function(id) {
         if (confirm('Удалить канал?')) {
-            await fetch(`/api/channels/${id}`, { method: 'DELETE' });
+            await fetch(`/api/channels/${id}`, { 
+                method: 'DELETE', 
+                headers: getAuthHeaders() 
+            });
             loadChannelsForEdit();
             loadChannels();
         }
@@ -62,7 +72,7 @@
         
         await fetch('/api/channels', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(),
             body: JSON.stringify({ name, url, icon: '🌐' })
         });
         
