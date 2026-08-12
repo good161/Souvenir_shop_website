@@ -116,7 +116,6 @@
                 document.getElementById('editCardId').value = cardId;
                 document.getElementById('editCardName').value = title.childNodes[0].textContent;
                 document.getElementById('editCardDescription').value = cardEl.querySelector('.card-description').textContent;
-                document.getElementById('editCardUrl').value = cardEl.getAttribute('data-url') || '';
                 document.getElementById('editCardModal').style.display = 'flex';
             });
         });
@@ -143,8 +142,7 @@
         const id = document.getElementById('editCardId').value;
         const name = document.getElementById('editCardName').value.trim();
         const description = document.getElementById('editCardDescription').value.trim();
-        const url = document.getElementById('editCardUrl').value.trim();
-        await fetch(`/api/cards/${id}`, { method: 'PATCH', headers: getAuthHeaders(), body: JSON.stringify({ name, description, url }) });
+        await fetch(`/api/cards/${id}`, { method: 'PATCH', headers: getAuthHeaders(), body: JSON.stringify({ name, description }) });
         document.getElementById('editCardModal').style.display = 'none';
         loadCards();
     });
