@@ -58,18 +58,11 @@ app.post('/api/login', async (req, res) => {
         const result = await pool.query('SELECT * FROM admins WHERE username = $1', [login]);
         if (result.rows.length === 0) return res.status(401).json({ error: 'Неверный логин или пароль' });
         const user = result.rows[0];
-        
-        console.log('Stored hash:', user.password_hash);
-        console.log('Password to check:', password);
-        
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-        console.log('Compare result:', isPasswordValid);
-        
         if (!isPasswordValid) return res.status(401).json({ error: 'Неверный логин или пароль' });
         const token = generateToken(user);
         res.json({ success: true, token, role: user.role });
     } catch (err) {
-        console.error('Login error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
