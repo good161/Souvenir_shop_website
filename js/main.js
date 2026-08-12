@@ -24,7 +24,7 @@
             
             grid.innerHTML = channels.map(c => `
                 <a href="${c.url}" target="_blank" class="channel-icon" title="${c.name}">
-                    <span style="font-size:1.5rem;">${c.icon || '🌐'}</span>
+                    <img src="https://www.google.com/s2/favicons?domain=${c.url}&sz=32" alt="${c.name}" class="channel-logo">
                     <span class="icon-label">${c.name}</span>
                 </a>
             `).join('');
@@ -40,7 +40,7 @@
         
         list.innerHTML = channels.map(c => `
             <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;">
-                <span>${c.icon || '🌐'} ${c.name}</span>
+                <span>${c.name}</span>
                 <button onclick="deleteChannel(${c.id})" style="background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;padding:0.2rem 0.5rem;">🗑️</button>
             </div>
         `).join('');
@@ -57,14 +57,13 @@
     document.getElementById('addChannelBtn').addEventListener('click', async function() {
         const name = document.getElementById('newChannelName').value.trim();
         const url = document.getElementById('newChannelUrl').value.trim();
-        const icon = document.getElementById('newChannelIcon').value.trim() || '🌐';
         
         if (!name || !url) return alert('Заполните название и URL');
         
         await fetch('/api/channels', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, url, icon })
+            body: JSON.stringify({ name, url, icon: '🌐' })
         });
         
         document.getElementById('newChannelName').value = '';
