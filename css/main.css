@@ -183,6 +183,39 @@ body {
     letter-spacing: 0.5px;
 }
 
+.card-links-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
+
+.card-link-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.card-link-item:hover {
+    background: #e2e8f0;
+}
+
+.card-link-name {
+    font-weight: 600;
+    color: #e31e24;
+    font-size: 0.85rem;
+}
+
+.card-link-desc {
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
 .footer-note {
     background: #f8f8f8;
     border-top: 1px solid #eaeaea;
