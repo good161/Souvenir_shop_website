@@ -112,7 +112,7 @@
             cards.forEach(card => {
                 const cardEl = document.querySelector(`[data-service="${card.id}"]`);
                 if (cardEl) {
-                    cardEl.querySelector('.card-title').textContent = card.name;
+                    cardEl.querySelector('.card-title').childNodes[0].textContent = card.name;
                     cardEl.querySelector('.card-description').textContent = card.description;
                     if (card.url) cardEl.setAttribute('data-url', card.url);
                 }
@@ -125,13 +125,18 @@
     if (localStorage.getItem('isAdmin') === 'true') {
         document.getElementById('editChannelsBtn').style.display = 'inline-block';
         document.querySelectorAll('.card-title').forEach(title => {
-            title.classList.add('editable');
-            title.addEventListener('click', (e) => {
+            const editBtn = document.createElement('span');
+            editBtn.textContent = '✏️';
+            editBtn.style.cssText = 'font-size:0.9rem;margin-left:0.5rem;cursor:pointer;opacity:0.5;';
+            editBtn.title = 'Редактировать карточку';
+            title.appendChild(editBtn);
+            
+            editBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const cardEl = title.closest('.service-card');
                 const cardId = cardEl.getAttribute('data-service');
                 document.getElementById('editCardId').value = cardId;
-                document.getElementById('editCardName').value = title.textContent;
+                document.getElementById('editCardName').value = title.childNodes[0].textContent;
                 document.getElementById('editCardDescription').value = cardEl.querySelector('.card-description').textContent;
                 document.getElementById('editCardUrl').value = cardEl.getAttribute('data-url') || '';
                 document.getElementById('editCardModal').style.display = 'flex';
@@ -189,7 +194,7 @@
     // Клик по карточкам
     document.querySelectorAll('.service-card').forEach(card => {
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.channel-icon') || e.target.closest('button') || e.target.closest('input')) return;
+            if (e.target.closest('.channel-icon') || e.target.closest('button') || e.target.closest('input') || e.target.closest('span')) return;
             
             const url = card.getAttribute('data-url');
             if (url) {
