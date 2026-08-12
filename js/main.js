@@ -24,6 +24,7 @@
         return div.innerHTML;
     }
 
+    // Каналы
     async function loadChannels() {
         try {
             const res = await fetch('/api/channels');
@@ -102,6 +103,39 @@
         }
     };
 
+    // Карточки
+    async function loadCards() {
+        try {
+            const res = await fetch('/api/cards');
+            const cards = await res.json();
+            
+            cards.forEach(card => {
+                const cardEl = document.querySelector(`[data-service="${card.id}"]`);
+                if (cardEl) {
+                    cardEl.querySelector('.card-title').textContent = card.name;
+                    cardEl.querySelector('.card-description').textContent = card.description;
+                    if (card.url) cardEl.setAttribute('data-url', card.url);
+                }
+            });
+        } catch (err) {
+            console.error('Ошибка загрузки карточек:', err);
+        }
+    }
+
+    if (localStorage.getItem('isAdmin') === 'true') {
+        document.getElementById('editChannelsBtn').style.display = 'inline-block';
+        document.querySelectorAll('.edit-card-btn').forEach(b => b.style.display = 'inline-block');
+    }
+
+    document.getElementById('editChannelsBtn').addEventListener('click', function() {
+        document.getElementById('channelsModal').style.display = 'flex';
+        loadChannelsForEdit();
+    });
+
+    document.getElementById('closeChannelsBtn').addEventListener('click', function() {
+        document.getElementById('channelsModal').style.display = 'none';
+    });
+
     document.getElementById('addChannelBtn').addEventListener('click', async function() {
         const name = document.getElementById('newChannelName').value.trim();
         const url = document.getElementById('newChannelUrl').value.trim();
@@ -120,57 +154,55 @@
         loadChannels();
     });
 
-    if (localStorage.getItem('isAdmin') === 'true') {
-        document.getElementById('editChannelsBtn').style.display = 'inline-block';
-    }
-
-    document.getElementById('editChannelsBtn').addEventListener('click', function() {
-        document.getElementById('channelsModal').style.display = 'flex';
-        loadChannelsForEdit();
+    document.querySelectorAll('.edit-card-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const cardId = btn.dataset.card;
+            const cardEl = document.querySelector(`[data-service="${cardId}"]`);
+            document.getElementById('editCardId').value = cardId;
+            document.getElementById('editCardName').value = cardEl.querySelector('.card-title').textContent;
+            document.getElementById('editCardDescription').value = cardEl.querySelector('.card-description').textContent;
+            document.getElementById('editCardUrl').value = cardEl.getAttribute('data-url') || '';
+            document.getElementById('editCardModal').style.display = 'flex';
+        });
     });
 
-    document.getElementById('closeChannelsBtn').addEventListener('click', function() {
-        document.getElementById('channelsModal').style.display = 'none';
+    document.getElementById('saveCardBtn').addEventListener('click', async () => {
+        const id = document.getElementById('editCardId').value;
+        const name = document.getElementById('editCardName').value.trim();
+        const description = document.getElementById('editCardDescription').value.trim();
+        const url = document.getElementById('editCardUrl').value.trim();
+        
+        await fetch(`/api/cards/${id}`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ name, description, url })
+        });
+        
+        document.getElementById('editCardModal').style.display = 'none';
+        loadCards();
     });
 
-    const serviceData = {
-        'it-services': { 
-            name: 'IT-сервисы', 
-            description: 'Личный кабинет, расписание, электронные заявки',
-            url: 'it-services/index.html'
-        },
-        'official-channels': { 
-            name: 'Официальные каналы связи', 
-            description: 'Почта, Telegram, ВКонтакте, Rutube, Дзен'
-        },
-        'bots': { 
-            name: 'Боты', 
-            description: 'Чат-боты для студентов и сотрудников',
-            url: 'bots/index.html'
-        },
-        'merch': { 
-            name: 'Сувенирная продукция', 
-            description: 'Магазин брендированных товаров ЧГУ',
-            url: 'merch/index.html'
-        }
-    };
+    document.getElementById('closeEditCardBtn').addEventListener('click', () => {
+        document.getElementById('editCardModal').style.display = 'none';
+    });
 
+    // Клик по карточкам
     document.querySelectorAll('.service-card').forEach(card => {
         card.addEventListener('click', (e) => {
             if (e.target.closest('.channel-icon') || e.target.closest('button') || e.target.closest('input')) return;
             
-            const serviceKey = card.getAttribute('data-service');
-            const info = serviceData[serviceKey];
-            
-            if ((serviceKey === 'merch' || serviceKey === 'it-services' || serviceKey === 'bots') && info.url) {
-                showMessage(`✨ ${info.name} — загрузка...`);
+            const url = card.getAttribute('data-url');
+            if (url) {
+                showMessage('✨ Загрузка...');
                 setTimeout(() => {
-                    window.location.href = info.url;
+                    window.location.href = url;
                 }, 500);
             }
         });
     });
 
     loadChannels();
-    console.log('🚀 ЧГУ Дашборд сервисов активирован');
+    loadCards();
+    console.log('ЧГУ Дашборд сервисов активирован');
 })();
