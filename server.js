@@ -141,4 +141,32 @@ app.post('/api/delete-image', async (req, res) => {
     }
 });
 
+app.get('/api/channels', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM channels ORDER BY id');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+app.post('/api/channels', async (req, res) => {
+    const { name, url, icon } = req.body;
+    try {
+        await pool.query('INSERT INTO channels (name, url, icon) VALUES ($1,$2,$3)', [name, url, icon || '🌐']);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+app.delete('/api/channels/:id', async (req, res) => {
+    try {
+        await pool.query('DELETE FROM channels WHERE id = $1', [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
 module.exports = app;
