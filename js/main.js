@@ -30,12 +30,7 @@
             const res = await fetch('/api/channels');
             const channels = await res.json();
             const grid = document.getElementById('channelsGrid');
-            
-            if (channels.length === 0) {
-                grid.innerHTML = '<span style="color:#94a3b8;">Нет каналов</span>';
-                return;
-            }
-            
+            if (channels.length === 0) { grid.innerHTML = '<span style="color:#94a3b8;">Нет каналов</span>'; return; }
             grid.innerHTML = channels.map(c => `
                 <a href="${c.url}" target="_blank" class="channel-icon" title="${c.name}">
                     <img src="https://www.google.com/s2/favicons?domain=${c.url}&sz=32" alt="${c.name}" class="channel-logo">
@@ -51,7 +46,6 @@
         const res = await fetch('/api/channels');
         const channels = await res.json();
         const list = document.getElementById('channelsEditList');
-        
         list.innerHTML = channels.map((c, i) => `
             <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
                 <button onclick="moveChannel(${c.id}, ${i}, -1)" ${i === 0 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▲</button>
@@ -64,11 +58,7 @@
     }
 
     window.updateChannel = async function(id, field, value) {
-        await fetch(`/api/channels/${id}`, {
-            method: 'PATCH',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ [field]: value })
-        });
+        await fetch(`/api/channels/${id}`, { method: 'PATCH', headers: getAuthHeaders(), body: JSON.stringify({ [field]: value }) });
         loadChannels();
     };
 
@@ -77,27 +67,17 @@
         const channels = await res.json();
         const newIndex = index + direction;
         if (newIndex < 0 || newIndex >= channels.length) return;
-        
         [channels[index], channels[newIndex]] = [channels[newIndex], channels[index]];
-        
         for (const ch of channels) {
-            await fetch(`/api/channels/${ch.id}`, {
-                method: 'PATCH',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({ display_order: channels.indexOf(ch) })
-            });
+            await fetch(`/api/channels/${ch.id}`, { method: 'PATCH', headers: getAuthHeaders(), body: JSON.stringify({ display_order: channels.indexOf(ch) }) });
         }
-        
         loadChannelsForEdit();
         loadChannels();
     };
 
     window.deleteChannel = async function(id) {
         if (confirm('Удалить канал?')) {
-            await fetch(`/api/channels/${id}`, { 
-                method: 'DELETE', 
-                headers: getAuthHeaders() 
-            });
+            await fetch(`/api/channels/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
             loadChannelsForEdit();
             loadChannels();
         }
@@ -108,7 +88,6 @@
         try {
             const res = await fetch('/api/cards');
             const cards = await res.json();
-            
             cards.forEach(card => {
                 const cardEl = document.querySelector(`[data-service="${card.id}"]`);
                 if (cardEl) {
@@ -117,20 +96,78 @@
                     if (card.url) cardEl.setAttribute('data-url', card.url);
                 }
             });
-        } catch (err) {
-            console.error('Ошибка загрузки карточек:', err);
-        }
+        } catch (err) {}
     }
 
+    // Ссылки карточек
+    async function loadCardLinks(cardId) {
+        try {
+            const res = await fetch(`/api/card-links/${cardId}`);
+            const links = await res.json();
+            const grid = document.getElementById(`links-${cardId}`);
+            if (!grid) return;
+            if (links.length === 0) { grid.innerHTML = ''; return; }
+            grid.innerHTML = links.map(l => `
+                <a href="${l.url}" target="_blank" class="card-link-item">
+                    <span class="card-link-name">${l.name}</span>
+                    ${l.description ? `<span class="card-link-desc">${l.description}</span>` : ''}
+                </a>
+            `).join('');
+        } catch (err) {}
+    }
+
+    async function loadCardLinksForEdit(cardId) {
+        const res = await fetch(`/api/card-links/${cardId}`);
+        const links = await res.json();
+        const list = document.getElementById('linksEditList');
+        list.innerHTML = links.map((l, i) => `
+            <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
+                <button onclick="moveCardLink(${l.id}, '${cardId}', ${i}, -1)" ${i === 0 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▲</button>
+                <button onclick="moveCardLink(${l.id}, '${cardId}', ${i}, 1)" ${i === links.length - 1 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▼</button>
+                <input type="text" value="${escapeHtml(l.name)}" onchange="updateCardLink(${l.id}, '${cardId}', 'name', this.value)" style="flex:1;min-width:80px;padding:0.4rem;border:2px solid #e2e8f0;border-radius:6px;font-size:0.8rem;" placeholder="Название">
+                <input type="text" value="${escapeHtml(l.url)}" onchange="updateCardLink(${l.id}, '${cardId}', 'url', this.value)" style="flex:2;min-width:120px;padding:0.4rem;border:2px solid #e2e8f0;border-radius:6px;font-size:0.8rem;" placeholder="URL">
+                <input type="text" value="${escapeHtml(l.description || '')}" onchange="updateCardLink(${l.id}, '${cardId}', 'description', this.value)" style="flex:1.5;min-width:100px;padding:0.4rem;border:2px solid #e2e8f0;border-radius:6px;font-size:0.8rem;" placeholder="Описание">
+                <button onclick="deleteCardLink(${l.id}, '${cardId}')" style="background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;padding:0.3rem 0.5rem;font-size:0.7rem;">🗑️</button>
+            </div>
+        `).join('');
+    }
+
+    window.updateCardLink = async function(id, cardId, field, value) {
+        await fetch(`/api/card-links/${id}`, { method: 'PATCH', headers: getAuthHeaders(), body: JSON.stringify({ [field]: value }) });
+        loadCardLinks(cardId);
+    };
+
+    window.moveCardLink = async function(id, cardId, index, direction) {
+        const res = await fetch(`/api/card-links/${cardId}`);
+        const links = await res.json();
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= links.length) return;
+        [links[index], links[newIndex]] = [links[newIndex], links[index]];
+        for (const l of links) {
+            await fetch(`/api/card-links/${l.id}`, { method: 'PATCH', headers: getAuthHeaders(), body: JSON.stringify({ display_order: links.indexOf(l) }) });
+        }
+        loadCardLinksForEdit(cardId);
+        loadCardLinks(cardId);
+    };
+
+    window.deleteCardLink = async function(id, cardId) {
+        if (confirm('Удалить ссылку?')) {
+            await fetch(`/api/card-links/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+            loadCardLinksForEdit(cardId);
+            loadCardLinks(cardId);
+        }
+    };
+
+    // Админские кнопки
     if (localStorage.getItem('isAdmin') === 'true') {
         document.getElementById('editChannelsBtn').style.display = 'inline-block';
+        document.querySelectorAll('.edit-links-btn').forEach(b => b.style.display = 'inline-block');
         document.querySelectorAll('.card-title').forEach(title => {
             const editBtn = document.createElement('span');
             editBtn.textContent = '✏️';
             editBtn.style.cssText = 'font-size:0.9rem;margin-left:0.5rem;cursor:pointer;opacity:0.5;';
             editBtn.title = 'Редактировать карточку';
             title.appendChild(editBtn);
-            
             editBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const cardEl = title.closest('.service-card');
@@ -144,27 +181,17 @@
         });
     }
 
+    // Обработчики модалок
     document.getElementById('editChannelsBtn').addEventListener('click', function() {
         document.getElementById('channelsModal').style.display = 'flex';
         loadChannelsForEdit();
     });
-
-    document.getElementById('closeChannelsBtn').addEventListener('click', function() {
-        document.getElementById('channelsModal').style.display = 'none';
-    });
-
-    document.getElementById('addChannelBtn').addEventListener('click', async function() {
+    document.getElementById('closeChannelsBtn').addEventListener('click', () => document.getElementById('channelsModal').style.display = 'none');
+    document.getElementById('addChannelBtn').addEventListener('click', async () => {
         const name = document.getElementById('newChannelName').value.trim();
         const url = document.getElementById('newChannelUrl').value.trim();
-        
         if (!name || !url) return alert('Заполните название и URL');
-        
-        await fetch('/api/channels', {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ name, url, icon: '🌐' })
-        });
-        
+        await fetch('/api/channels', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ name, url, icon: '🌐' }) });
         document.getElementById('newChannelName').value = '';
         document.getElementById('newChannelUrl').value = '';
         loadChannelsForEdit();
@@ -176,37 +203,35 @@
         const name = document.getElementById('editCardName').value.trim();
         const description = document.getElementById('editCardDescription').value.trim();
         const url = document.getElementById('editCardUrl').value.trim();
-        
-        await fetch(`/api/cards/${id}`, {
-            method: 'PATCH',
-            headers: getAuthHeaders(),
-            body: JSON.stringify({ name, description, url })
-        });
-        
+        await fetch(`/api/cards/${id}`, { method: 'PATCH', headers: getAuthHeaders(), body: JSON.stringify({ name, description, url }) });
         document.getElementById('editCardModal').style.display = 'none';
         loadCards();
     });
+    document.getElementById('closeEditCardBtn').addEventListener('click', () => document.getElementById('editCardModal').style.display = 'none');
 
-    document.getElementById('closeEditCardBtn').addEventListener('click', () => {
-        document.getElementById('editCardModal').style.display = 'none';
-    });
-
-    // Клик по карточкам
-    document.querySelectorAll('.service-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-            if (e.target.closest('.channel-icon') || e.target.closest('button') || e.target.closest('input') || e.target.closest('span')) return;
-            
-            const url = card.getAttribute('data-url');
-            if (url) {
-                showMessage('✨ Загрузка...');
-                setTimeout(() => {
-                    window.location.href = url;
-                }, 500);
-            }
+    document.querySelectorAll('.edit-links-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const cardId = this.dataset.card;
+            document.getElementById('linksEditCardId').value = cardId;
+            document.getElementById('linksEditModal').style.display = 'flex';
+            loadCardLinksForEdit(cardId);
         });
     });
+    document.getElementById('addLinkBtn').addEventListener('click', async () => {
+        const cardId = document.getElementById('linksEditCardId').value;
+        const name = document.getElementById('newLinkName').value.trim();
+        const url = document.getElementById('newLinkUrl').value.trim();
+        const description = document.getElementById('newLinkDesc').value.trim();
+        if (!name || !url) return alert('Заполните название и URL');
+        await fetch('/api/card-links', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ card_id: cardId, name, url, description }) });
+        document.getElementById('newLinkName').value = '';
+        document.getElementById('newLinkUrl').value = '';
+        document.getElementById('newLinkDesc').value = '';
+        loadCardLinksForEdit(cardId);
+        loadCardLinks(cardId);
+    });
+    document.getElementById('closeLinksEditBtn').addEventListener('click', () => document.getElementById('linksEditModal').style.display = 'none');
 
-    loadChannels();
-    loadCards();
-    console.log('ЧГУ Дашборд сервисов активирован');
-})();
+    // Клик по карточкам
+    document.querySelectorAll('.
