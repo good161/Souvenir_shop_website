@@ -218,4 +218,25 @@ app.delete('/api/channels/:id', authenticateToken, async (req, res) => {
     }
 });
 
+app.get('/api/cards', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM cards ORDER BY display_order');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+app.patch('/api/cards/:id', authenticateToken, async (req, res) => {
+    const { name, description, url } = req.body;
+    try {
+        if (name) await pool.query('UPDATE cards SET name = $1 WHERE id = $2', [name, req.params.id]);
+        if (description !== undefined) await pool.query('UPDATE cards SET description = $1 WHERE id = $2', [description, req.params.id]);
+        if (url !== undefined) await pool.query('UPDATE cards SET url = $1 WHERE id = $2', [url, req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
 module.exports = app;
