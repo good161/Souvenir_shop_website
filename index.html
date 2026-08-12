@@ -24,7 +24,8 @@
                 <div class="card-content">
                     <div class="card-title">IT-сервисы</div>
                     <div class="card-description">Личный кабинет студента, Мероприятия, Расписание, Электронные услуги</div>
-                    <span class="card-link">Перейти в IT-портал <span>→</span></span>
+                    <div class="card-links-grid" id="links-it-services"></div>
+                    <button class="edit-links-btn card-link" style="display:none;" data-card="it-services">✏️ Редактировать</button>
                 </div>
             </div>
 
@@ -33,9 +34,7 @@
                 <div class="card-accent"></div>
                 <div class="card-content">
                     <div class="card-title">Официальные каналы связи</div>
-                    <div class="channels-grid" id="channelsGrid">
-                        Загрузка...
-                    </div>
+                    <div class="channels-grid" id="channelsGrid">Загрузка...</div>
                     <button id="editChannelsBtn" class="card-link" style="display:none;">✏️ Редактировать каналы</button>
                 </div>
             </div>
@@ -46,7 +45,8 @@
                 <div class="card-content">
                     <div class="card-title">Боты</div>
                     <div class="card-description">Бот первокурсника, Единый деканат, Поддержка студентов, ВУЦ бот, Путеводитель по университету</div>
-                    <span class="card-link">Показать всех ботов <span>→</span></span>
+                    <div class="card-links-grid" id="links-bots"></div>
+                    <button class="edit-links-btn card-link" style="display:none;" data-card="bots">✏️ Редактировать</button>
                 </div>
             </div>
 
@@ -67,7 +67,7 @@
         </div>
     </div>
 
-    <!-- Модалка редактирования каналов -->
+    <!-- Модалка каналов -->
     <div id="channelsModal" class="channels-modal">
         <div class="channels-modal-content">
             <h3>Редактировать каналы</h3>
@@ -83,7 +83,7 @@
         </div>
     </div>
 
-    <!-- Модалка редактирования карточки -->
+    <!-- Модалка карточки -->
     <div id="editCardModal" class="channels-modal">
         <div class="channels-modal-content">
             <h3>Редактировать карточку</h3>
@@ -94,6 +94,24 @@
             <div class="channels-buttons">
                 <button id="saveCardBtn" class="channels-btn primary">Сохранить</button>
                 <button id="closeEditCardBtn" class="channels-btn">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка ссылок -->
+    <div id="linksEditModal" class="channels-modal">
+        <div class="channels-modal-content">
+            <h3>Редактировать ссылки</h3>
+            <input type="hidden" id="linksEditCardId">
+            <div id="linksEditList"></div>
+            <div style="display:flex;gap:0.3rem;margin-top:1rem;flex-wrap:wrap;">
+                <input type="text" id="newLinkName" placeholder="Название" class="channels-input" style="flex:1;min-width:100px;">
+                <input type="text" id="newLinkUrl" placeholder="URL" class="channels-input" style="flex:2;min-width:150px;">
+                <input type="text" id="newLinkDesc" placeholder="Описание" class="channels-input" style="flex:1.5;min-width:120px;">
+            </div>
+            <div class="channels-buttons">
+                <button id="addLinkBtn" class="channels-btn primary">Добавить</button>
+                <button id="closeLinksEditBtn" class="channels-btn">Закрыть</button>
             </div>
         </div>
     </div>
