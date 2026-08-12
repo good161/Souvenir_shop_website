@@ -17,65 +17,31 @@
             </div>
         </div>
 
-        <div class="services-grid">
-            <div class="service-card" data-type="student">
-                <div class="card-accent"></div>
-                <div class="card-content">
-
-                    <div class="card-title">Личный кабинет</div>
-                    <span class="card-link">Перейти <span class="arrow">→</span></span>
-                </div>
-            </div>
-
-            <div class="service-card" data-type="schedule">
-                <div class="card-accent"></div>
-                <div class="card-content">
-
-                    <div class="card-title">Расписание</div>
-                    <span class="card-link">Перейти <span class="arrow">→</span></span>
-                </div>
-            </div>
-
-            <div class="service-card" data-type="events">
-                <div class="card-accent"></div>
-                <div class="card-content">
-
-                    <div class="card-title">Мероприятия</div>
-                    <span class="card-link">Перейти <span class="arrow">→</span></span>
-                </div>
-            </div>
-
-            <div class="service-card" data-type="requests">
-                <div class="card-accent"></div>
-                <div class="card-content">
-
-                    <div class="card-title">Электронные услуги</div>
-                    <span class="card-link">Перейти <span class="arrow">→</span></span>
-                </div>
-            </div>
-
-            <div class="service-card" data-type="library">
-                <div class="card-accent"></div>
-                <div class="card-content">
-
-                    <div class="card-title">Электронная библиотека</div>
-                    <span class="card-link">Перейти <span class="arrow">→</span></span>
-                </div>
-            </div>
-
-            <div class="service-card" data-type="mail">
-                <div class="card-accent"></div>
-                <div class="card-content">
-
-                    <div class="card-title">Корпоративная почта</div>
-                    <span class="card-link">Перейти <span class="arrow">→</span></span>
-                </div>
-            </div>
+        <div class="services-grid" id="servicesGrid">
+            Загрузка...
         </div>
 
         <div class="footer-note">
             <span>© 2026 ЧГУ | Единая платформа сервисов</span>
             <div class="badge-mini">доступно авторизованным пользователям</div>
+        </div>
+    </div>
+
+    <button id="editServicesBtn" class="back-button" style="top:80px;display:none;position:fixed;left:20px;">✏️</button>
+
+    <div id="servicesModal" class="channels-modal">
+        <div class="channels-modal-content">
+            <h3>Редактировать сервисы</h3>
+            <div id="servicesEditList"></div>
+            <div style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;">
+                <input type="text" id="newServiceName" placeholder="Название" class="channels-input" style="flex:1;">
+                <input type="text" id="newServiceUrl" placeholder="URL" class="channels-input" style="flex:2;">
+                <input type="text" id="newServiceDesc" placeholder="Описание" class="channels-input" style="flex:1;">
+            </div>
+            <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                <button id="addServiceBtn" class="channels-btn primary">Добавить</button>
+                <button id="closeServicesBtn" class="channels-btn">Закрыть</button>
+            </div>
         </div>
     </div>
 
