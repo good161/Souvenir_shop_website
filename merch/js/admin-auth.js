@@ -1,3 +1,5 @@
+let authToken = localStorage.getItem('authToken') || '';
+
 function showLoginModal() {
     document.getElementById('loginModal').classList.add('show');
     document.getElementById('loginInput').value = '';
@@ -9,10 +11,20 @@ function hideLoginModal() {
     document.getElementById('loginModal').classList.remove('show');
 }
 
+function getAuthHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+    };
+}
+
 function restoreSession() {
-    if (localStorage.getItem('isAdmin') === 'true') {
+    const savedToken = localStorage.getItem('authToken');
+    const savedRole = localStorage.getItem('adminRole');
+    if (savedToken && savedRole) {
+        authToken = savedToken;
         isAdmin = true;
-        adminRole = localStorage.getItem('adminRole') || '';
+        adminRole = savedRole;
         document.getElementById('adminBtn').classList.add('active');
         return true;
     }
@@ -37,10 +49,12 @@ function initAdminAuth() {
             const data = await res.json();
 
             if (data.success) {
+                authToken = data.token;
                 isAdmin = true;
                 adminRole = data.role;
-                localStorage.setItem('isAdmin', 'true');
+                localStorage.setItem('authToken', authToken);
                 localStorage.setItem('adminRole', data.role);
+                localStorage.setItem('isAdmin', 'true');
                 
                 errorElement.classList.remove('show');
                 document.getElementById('adminBtn').classList.add('active');
