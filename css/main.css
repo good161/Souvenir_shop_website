@@ -110,6 +110,22 @@ body {
     letter-spacing: -0.3px;
     margin-bottom: 0.8rem;
     line-height: 1.2;
+    position: relative;
+    display: inline-block;
+}
+
+.card-title.editable {
+    cursor: pointer;
+}
+
+.card-title.editable:hover::after {
+    content: '✏️';
+    position: absolute;
+    right: -30px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    opacity: 0.6;
 }
 
 .card-description {
