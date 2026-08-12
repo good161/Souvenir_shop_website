@@ -18,6 +18,12 @@
         };
     }
 
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     async function loadChannels() {
         try {
             const res = await fetch('/api/channels');
@@ -45,13 +51,45 @@
         const channels = await res.json();
         const list = document.getElementById('channelsEditList');
         
-        list.innerHTML = channels.map(c => `
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;">
-                <span>${c.name}</span>
-                <button onclick="deleteChannel(${c.id})" style="background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;padding:0.2rem 0.5rem;">🗑️</button>
+        list.innerHTML = channels.map((c, i) => `
+            <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
+                <button onclick="moveChannel(${c.id}, ${i}, -1)" ${i === 0 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▲</button>
+                <button onclick="moveChannel(${c.id}, ${i}, 1)" ${i === channels.length - 1 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▼</button>
+                <input type="text" value="${escapeHtml(c.name)}" onchange="updateChannel(${c.id}, 'name', this.value)" style="flex:1;min-width:100px;padding:0.4rem;border:2px solid #e2e8f0;border-radius:6px;font-size:0.8rem;">
+                <input type="text" value="${escapeHtml(c.url)}" onchange="updateChannel(${c.id}, 'url', this.value)" style="flex:2;min-width:150px;padding:0.4rem;border:2px solid #e2e8f0;border-radius:6px;font-size:0.8rem;">
+                <button onclick="deleteChannel(${c.id})" style="background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;padding:0.3rem 0.5rem;font-size:0.7rem;">🗑️</button>
             </div>
         `).join('');
     }
+
+    window.updateChannel = async function(id, field, value) {
+        await fetch(`/api/channels/${id}`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ [field]: value })
+        });
+        loadChannels();
+    };
+
+    window.moveChannel = async function(id, index, direction) {
+        const res = await fetch('/api/channels');
+        const channels = await res.json();
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= channels.length) return;
+        
+        [channels[index], channels[newIndex]] = [channels[newIndex], channels[index]];
+        
+        for (const ch of channels) {
+            await fetch(`/api/channels/${ch.id}`, {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ display_order: channels.indexOf(ch) })
+            });
+        }
+        
+        loadChannelsForEdit();
+        loadChannels();
+    };
 
     window.deleteChannel = async function(id) {
         if (confirm('Удалить канал?')) {
