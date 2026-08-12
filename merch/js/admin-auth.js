@@ -9,7 +9,19 @@ function hideLoginModal() {
     document.getElementById('loginModal').classList.remove('show');
 }
 
+function restoreSession() {
+    if (localStorage.getItem('isAdmin') === 'true') {
+        isAdmin = true;
+        adminRole = localStorage.getItem('adminRole') || '';
+        document.getElementById('adminBtn').classList.add('active');
+        return true;
+    }
+    return false;
+}
+
 function initAdminAuth() {
+    restoreSession();
+    
     document.getElementById('loginSubmit').addEventListener('click', async () => {
         const login = document.getElementById('loginInput').value;
         const password = document.getElementById('passwordInput').value;
