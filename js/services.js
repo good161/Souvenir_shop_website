@@ -34,13 +34,19 @@ async function loadLinks() {
             return;
         }
         
-        list.innerHTML = links.map(l => `
-            <a href="${l.url}" target="_blank" class="service-link-item">
-                <span class="service-link-name">${l.name}</span>
-                ${l.description ? `<span class="service-link-desc">${l.description}</span>` : ''}
-                <span class="service-link-btn">Перейти →</span>
-            </a>
-        `).join('');
+        list.innerHTML = `
+            <div class="links-grid">
+                ${links.map(l => `
+                    <a href="${l.url}" target="_blank" class="service-link-card">
+                        <div class="card-accent"></div>
+                        <div class="card-content">
+                            <div class="card-title">${l.name}</div>
+                            ${l.description ? `<div class="card-description">${l.description}</div>` : ''}
+                            <span class="card-link">Перейти <span>→</span></span>
+                        </div>
+                    </a>
+                `).join('')}
+            </div>`;
     } catch (err) {
         document.getElementById('linksList').innerHTML = '<div class="no-results">Ошибка загрузки</div>';
     }
