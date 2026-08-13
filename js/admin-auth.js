@@ -1,7 +1,15 @@
+let authToken = localStorage.getItem('authToken') || '';
+
+// Переменные для админа
 let isAdmin = false;
 let adminRole = '';
+let editingProductId = null;
+let showArchived = false;
 
-let authToken = localStorage.getItem('authToken') || '';
+// Проверяем localStorage при загрузке (восстанавливаем сессию)
+if (localStorage.getItem('isAdmin') === 'true') {
+    isAdmin = true;
+}
 
 function showLoginModal() {
     document.getElementById('loginModal').classList.add('show');
@@ -35,7 +43,7 @@ function restoreSession() {
 }
 
 function initAdminAuth() {
-    document.getElementById('adminBtn').addEventListener('click', showLoginModal);
+    // ВАЖНО: здесь удалена строка с addEventListener на клик!
 
     restoreSession();
     
@@ -76,3 +84,28 @@ function initAdminAuth() {
     
     document.getElementById('loginCancel').addEventListener('click', hideLoginModal);
 }
+
+
+document.getElementById('adminBtn').addEventListener('click', () => {
+    if (isAdmin) {
+        // Если админ уже вошел — делаем выход
+        document.getElementById('adminBtn').classList.remove('active');
+        isAdmin = false;
+        adminRole = '';
+        showArchived = false;
+        authToken = '';
+        localStorage.removeItem('isAdmin');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('adminRole');
+        
+        // Обновите интерфейс (если есть функции)
+        if (typeof renderProducts === 'function') renderProducts(products);
+    } else {
+        // Если не вошел — открываем модалку входа
+        showLoginModal();
+    }
+});
+
+
+initAdminAuth();
+initAdminManagers();
