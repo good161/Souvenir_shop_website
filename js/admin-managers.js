@@ -73,8 +73,7 @@ async function changePassword() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('adminRole');
     authToken = '';
-    document.getElementById('adminBtn').classList.remove('active');
-    renderProducts(products);
+    updateUI()
 }
 
 function showAdminsModal() { document.getElementById('adminsModal').classList.add('show'); loadAdmins(); }
