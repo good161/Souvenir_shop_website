@@ -1,0 +1,131 @@
+.admin-login-btn {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+}
+.admin-login-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+.admin-login-btn.active {
+    background: #2d7a3a;
+    border-color: #4ade80;
+}
+
+.admin-logout-btn {
+    position: fixed;
+    top: 10px;
+    left: 100px;
+    z-index: 999;
+    background: rgba(180, 40, 40, 0.8);
+    color: #fff;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+    display: none;
+}
+.admin-logout-btn:hover {
+    background: rgba(200, 50, 50, 0.9);
+}
+.admin-logout-btn.visible {
+    display: inline-block;
+}
+
+/* Модалка входа */
+.login-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+.login-modal.show {
+    display: flex;
+}
+
+.login-modal-content {
+    background: #1a1a2e;
+    padding: 30px;
+    border-radius: 16px;
+    max-width: 320px;
+    width: 90%;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.login-modal-content h3 {
+    color: #fff;
+    margin-bottom: 16px;
+    text-align: center;
+}
+.login-modal-content input {
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+.login-modal-content input:focus {
+    outline: none;
+    border-color: #2d7a3a;
+}
+.login-modal-content input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.login-error {
+    color: #ef4444;
+    font-size: 12px;
+    display: none;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+.btn-group button {
+    flex: 1;
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+
+.btn-primary {
+    background: #2d7a3a;
+    color: #fff;
+}
+.btn-primary:hover {
+    background: #3a9e4a;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
