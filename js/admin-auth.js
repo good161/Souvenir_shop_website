@@ -61,8 +61,6 @@ function initAdminAuth() {
                 errorElement.classList.remove('show');
                 document.getElementById('adminBtn').classList.add('active');
                 hideLoginModal();
-                updateCategoryButtons();
-                renderProducts(products);
             } else {
                 errorElement.textContent = data.error || 'Неверный логин или пароль';
                 errorElement.classList.add('show');
