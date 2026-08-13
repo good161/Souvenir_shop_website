@@ -173,16 +173,16 @@ body {
 }
 
 .edit-btn {
-    margin-top: 2rem;
-    padding: 0.6rem 1.8rem;
+    margin-top: 1rem;
+    padding: 0.6rem 1.2rem;
     background: #f1f5f9;
     color: #475569;
-    border: 2px solid #e2e8f0;
-    border-radius: 30px;
+    border: none;
+    border-radius: 12px;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    display: none;
 }
 
 .edit-btn:hover {
