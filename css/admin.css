@@ -181,3 +181,44 @@
 .admin-item .delete-admin-btn:hover {
     background: rgba(239, 68, 68, 0.3);
 }
+
+/* Кнопка "Администраторы" */
+.admin-btn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+    display: none;
+}
+.admin-btn.visible {
+    display: inline-block;
+}
+.admin-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+#showAdminsBtn {
+    position: fixed;
+    top: 60px;
+    right: 10px;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    display: none;
+}
+#showAdminsBtn.visible {
+    display: inline-block;
+}
