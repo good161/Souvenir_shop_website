@@ -80,7 +80,7 @@ function showAdminsModal() { document.getElementById('adminsModal').classList.ad
 function hideAdminsModal() { document.getElementById('adminsModal').classList.remove('show'); }
 
 function initAdminManagers() {
-    document.getElementById('adminManageAdminsBtn').addEventListener('click', showAdminsModal);
+    document.getElementById('showAdminsBtn').addEventListener('click', showAdminsModal);
     document.getElementById('closeAdminsBtn').addEventListener('click', hideAdminsModal);
     document.getElementById('addAdminBtn').addEventListener('click', addAdmin);
     document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
