@@ -1,3 +1,9 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 html, body {
     height: 100%;
 }
@@ -13,7 +19,6 @@ body {
     min-height: 100vh;
 }
 
-/* ===== HEADER ===== */
 .brand-header {
     position: relative;
     background: #1a1a1a;
@@ -54,7 +59,6 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* ===== КНОПКА НАЗАД ===== */
 .back-button {
     position: fixed;
     top: 20px;
@@ -85,7 +89,6 @@ body {
     transform: scale(0.95);
 }
 
-/* ===== SERVICES PAGE ===== */
 .services-page {
     max-width: 1280px;
     margin: 0 auto;
@@ -94,7 +97,6 @@ body {
     flex: 1;
 }
 
-/* ===== СЕТКА ССЫЛОК ===== */
 .links-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -102,7 +104,6 @@ body {
     width: 100%;
 }
 
-/* ===== КАРТОЧКА ССЫЛКИ ===== */
 .service-link-card {
     background: #ffffff;
     border-radius: 1.5rem;
@@ -174,4 +175,375 @@ body {
 .service-link-card:hover .card-link {
     gap: 0.75rem;
     border-bottom-color: #e31e24;
-    color: #b112
+    color: #b11218;
+}
+
+.edit-btn {
+    margin-top: 1rem;
+    padding: 0.6rem 1.2rem;
+    background: #f1f5f9;
+    color: #475569;
+    border: 2px solid #e2e8f0;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: none;
+    transition: all 0.2s;
+}
+
+.edit-btn:hover {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+}
+
+.footer-note {
+    background: #f8f8f8;
+    border-top: 1px solid #eaeaea;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    color: #5a5a5a;
+    width: 100%;
+    margin-top: auto;
+}
+
+.badge-mini {
+    background: #efefef;
+    padding: 0.25rem 0.9rem;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    color: #1f1f1f;
+    font-weight: 500;
+}
+
+.channels-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.channels-modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 700px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.channels-modal-content h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #1e293b;
+}
+
+.channels-input {
+    padding: 0.7rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    outline: none;
+    background: #fafafa;
+    transition: border-color 0.2s;
+}
+
+.channels-input:focus {
+    border-color: #e31e24;
+    background: white;
+}
+
+.channels-add-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.channels-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.channels-btn {
+    padding: 0.6rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.channels-btn:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+}
+
+.channels-btn.primary {
+    background: #e31e24;
+    color: white;
+}
+
+.channels-btn.primary:hover {
+    background: #b11218;
+}
+
+.no-results {
+    text-align: center;
+    padding: 3rem;
+    color: #94a3b8;
+    grid-column: 1 / -1;
+    font-size: 1.1rem;
+    background: #f8fafc;
+    border-radius: 1.2rem;
+    border: 2px dashed #e2e8f0;
+}
+
+@media (max-width: 780px) {
+    .brand-header {
+        height: 240px;
+        padding: 0 2rem;
+    }
+    .header-overlay {
+        padding: 0 2rem 2rem 2rem;
+    }
+    .header-overlay p {
+        font-size: 1.1rem;
+    }
+    .services-page {
+        padding: 1.5rem 1.5rem 2rem 1.5rem;
+    }
+    .links-grid {
+        gap: 1rem;
+    }
+    .service-link-card .card-title {
+        font-size: 1.2rem;
+    }
+    .service-link-card .card-content {
+        padding: 1.2rem 1rem 1.4rem 1rem;
+    }
+    .service-link-card .card-description {
+        font-size: 0.8rem;
+    }
+    .service-link-card .card-link {
+        font-size: 0.78rem;
+    }
+    .channels-modal-content {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .brand-header {
+        height: 180px;
+        padding: 0 1rem;
+    }
+    .header-overlay {
+        padding: 0 1rem 1.5rem 1rem;
+    }
+    .header-overlay p {
+        font-size: 0.85rem;
+    }
+    .services-page {
+        padding: 1rem 1rem 1.5rem 1rem;
+    }
+    .links-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+    }
+    .service-link-card {
+        border-radius: 1rem;
+    }
+    .service-link-card .card-accent {
+        height: 4px;
+    }
+    .service-link-card .card-content {
+        padding: 1rem 0.8rem 1.2rem 0.8rem;
+    }
+    .service-link-card .card-title {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+    }
+    .service-link-card .card-description {
+        font-size: 0.72rem;
+        margin-bottom: 0.6rem;
+    }
+    .service-link-card .card-link {
+        font-size: 0.7rem;
+    }
+    .back-button {
+        top: 12px;
+        left: 12px;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.7rem;
+        border-radius: 20px;
+    }
+    .channels-modal-content {
+        padding: 1rem;
+        border-radius: 1rem;
+    }
+    .channels-modal-content h3 {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    .channels-input {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.8rem;
+    }
+    .channels-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.78rem;
+    }
+    .footer-note {
+        padding: 0.6rem 0.8rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.4rem;
+        font-size: 0.65rem;
+    }
+    .badge-mini {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-header {
+        height: 160px;
+    }
+    .header-overlay p {
+        font-size: 0.8rem;
+    }
+    .services-page {
+        padding: 0.8rem 0.8rem 1.2rem 0.8rem;
+    }
+    .links-grid {
+        gap: 0.6rem;
+    }
+    .service-link-card {
+        border-radius: 0.9rem;
+    }
+    .service-link-card .card-accent {
+        height: 3px;
+    }
+    .service-link-card .card-content {
+        padding: 0.8rem 0.6rem 1rem 0.6rem;
+    }
+    .service-link-card .card-title {
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+    .service-link-card .card-description {
+        font-size: 0.68rem;
+        margin-bottom: 0.5rem;
+    }
+    .service-link-card .card-link {
+        font-size: 0.65rem;
+    }
+    .back-button {
+        top: 10px;
+        left: 10px;
+        padding: 0.3rem 0.7rem;
+        font-size: 0.65rem;
+        border-radius: 16px;
+    }
+    .no-results {
+        padding: 2rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .brand-header {
+        height: 140px;
+    }
+    .header-overlay {
+        padding: 0 0.8rem 1.2rem 0.8rem;
+    }
+    .header-overlay p {
+        font-size: 0.75rem;
+    }
+    .services-page {
+        padding: 0.6rem 0.6rem 1rem 0.6rem;
+    }
+    .links-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+    .service-link-card {
+        border-radius: 0.8rem;
+    }
+    .service-link-card .card-accent {
+        height: 3px;
+    }
+    .service-link-card .card-content {
+        padding: 0.6rem 0.5rem 0.8rem 0.5rem;
+    }
+    .service-link-card .card-title {
+        font-size: 0.8rem;
+        margin-bottom: 0.3rem;
+        letter-spacing: -0.2px;
+    }
+    .service-link-card .card-description {
+        font-size: 0.6rem;
+        margin-bottom: 0.4rem;
+        line-height: 1.3;
+    }
+    .service-link-card .card-link {
+        font-size: 0.6rem;
+        gap: 0.3rem;
+    }
+    .back-button {
+        top: 8px;
+        left: 8px;
+        padding: 0.25rem 0.6rem;
+        font-size: 0.6rem;
+        border-radius: 14px;
+        gap: 0.3rem;
+    }
+    .channels-modal-content {
+        padding: 0.8rem;
+    }
+    .channels-modal-content h3 {
+        font-size: 1rem;
+    }
+    .channels-input {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.6rem;
+    }
+    .channels-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.7rem;
+    }
+    .footer-note {
+        padding: 0.5rem 0.6rem;
+        gap: 0.3rem;
+        font-size: 0.6rem;
+    }
+    .badge-mini {
+        font-size: 0.55rem;
+        padding: 0.15rem 0.5rem;
+    }
+}
