@@ -1,31 +1,33 @@
 
+let authToken = localStorage.getItem('authToken') || '';
 let isAdmin = localStorage.getItem('isAdmin') === 'true';
+let adminRole = localStorage.getItem('adminRole') || 'user';
 
 // Обновление интерфейса
 function updateUI() {
     const loginBtn = document.getElementById('adminLoginBtn');
     const logoutBtn = document.getElementById('adminLogoutBtn');
     
-    if (isAdmin) {
+    if (isAdmin && authToken) {
         loginBtn.textContent = '👤 Админ';
         loginBtn.classList.add('active');
         logoutBtn.classList.add('visible');
+        logoutBtn.style.display = 'inline-block';
     } else {
         loginBtn.textContent = '🔑 Вход';
         loginBtn.classList.remove('active');
         logoutBtn.classList.remove('visible');
+        logoutBtn.style.display = 'none';
     }
 }
 
-// Toast уведомления
-function showToast(message) {
-    const toast = document.getElementById('toastMsg');
-    toast.textContent = message;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2000);
+function getAuthHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+    };
 }
 
-// Показать модалку входа
 function showLoginModal() {
     document.getElementById('loginModal').classList.add('show');
     document.getElementById('loginInput').value = '';
@@ -33,66 +35,136 @@ function showLoginModal() {
     document.getElementById('loginError').style.display = 'none';
 }
 
-// Скрыть модалку входа
 function hideLoginModal() {
     document.getElementById('loginModal').classList.remove('show');
 }
 
-// Обработчик входа
-function handleLogin() {
-    const login = document.getElementById('loginInput').value;
-    const password = document.getElementById('passwordInput').value;
-    const error = document.getElementById('loginError');
-    
-    if (login === 'admin' && password === 'admin') {
+function restoreSession() {
+    const savedToken = localStorage.getItem('authToken');
+    const savedRole = localStorage.getItem('adminRole');
+    if (savedToken && savedRole) {
+        authToken = savedToken;
         isAdmin = true;
-        localStorage.setItem('isAdmin', 'true');
-        error.style.display = 'none';
-        hideLoginModal();
+        adminRole = savedRole;
         updateUI();
-        showToast('✅ Вход выполнен');
-    } else {
-        error.textContent = 'Неверный логин или пароль';
-        error.style.display = 'block';
+        return true;
     }
+    return false;
 }
 
-// Обработчик выхода
-function handleLogout() {
-    isAdmin = false;
-    localStorage.removeItem('isAdmin');
-    updateUI();
-    showToast('👋 Выход выполнен');
+// Toast уведомления
+function showToast(message) {
+    const toast = document.getElementById('toastMsg');
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
-// ИНИЦИАЛИЗАЦИЯ
 
-document.addEventListener('DOMContentLoaded', function() {
-    updateUI();
+function initAdminAuth() {
+    restoreSession();
     
     // Кнопка входа
     document.getElementById('adminLoginBtn').addEventListener('click', function() {
-        if (isAdmin) {
-            handleLogout();
+        if (isAdmin && authToken) {
+            // Выход
+            isAdmin = false;
+            adminRole = 'user';
+            authToken = '';
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('adminRole');
+            localStorage.removeItem('isAdmin');
+            updateUI();
+            showToast('👋 Выход выполнен');
         } else {
             showLoginModal();
         }
     });
     
-    // Кнопка выхода
-    document.getElementById('adminLogoutBtn').addEventListener('click', handleLogout);
+    // Кнопка выхода (отдельная)
+    document.getElementById('adminLogoutBtn').addEventListener('click', function() {
+        isAdmin = false;
+        adminRole = 'user';
+        authToken = '';
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('adminRole');
+        localStorage.removeItem('isAdmin');
+        updateUI();
+        showToast('👋 Выход выполнен');
+    });
     
-    // Кнопка входа в модалке
-    document.getElementById('loginSubmit').addEventListener('click', handleLogin);
+    // Вход
+    document.getElementById('loginSubmit').addEventListener('click', async () => {
+        const login = document.getElementById('loginInput').value;
+        const password = document.getElementById('passwordInput').value;
+        const errorElement = document.getElementById('loginError');
+
+        if (!login || !password) {
+            errorElement.textContent = 'Введите логин и пароль';
+            errorElement.style.display = 'block';
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ login, password })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                authToken = data.token;
+                isAdmin = true;
+                adminRole = data.role || 'admin';
+                localStorage.setItem('authToken', authToken);
+                localStorage.setItem('adminRole', adminRole);
+                localStorage.setItem('isAdmin', 'true');
+                
+                errorElement.style.display = 'none';
+                hideLoginModal();
+                updateUI();
+                showToast('✅ Вход выполнен');
+                
+                // Если есть функция обновления - вызываем
+                if (typeof updateCategoryButtons === 'function') {
+                    updateCategoryButtons();
+                }
+                if (typeof renderProducts === 'function' && typeof products !== 'undefined') {
+                    renderProducts(products);
+                }
+            } else {
+                errorElement.textContent = data.error || 'Неверный логин или пароль';
+                errorElement.style.display = 'block';
+            }
+        } catch (err) {
+            errorElement.textContent = 'Ошибка сервера';
+            errorElement.style.display = 'block';
+            console.error('Login error:', err);
+        }
+    });
     
-    // Кнопка отмены
+    // Отмена
     document.getElementById('loginCancel').addEventListener('click', hideLoginModal);
     
-    // Enter на полях
+    // Enter
     document.getElementById('passwordInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') handleLogin();
+        if (e.key === 'Enter') {
+            document.getElementById('loginSubmit').click();
+        }
     });
     document.getElementById('loginInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') document.getElementById('passwordInput').focus();
+        if (e.key === 'Enter') {
+            document.getElementById('passwordInput').focus();
+        }
     });
-});
+}
+
+// Запуск
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdminAuth);
+} else {
+    initAdminAuth();
+}
