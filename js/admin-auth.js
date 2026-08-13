@@ -1,3 +1,6 @@
+let isAdmin = false;
+let adminRole = '';
+
 let authToken = localStorage.getItem('authToken') || '';
 
 function showLoginModal() {
