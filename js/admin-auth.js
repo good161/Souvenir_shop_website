@@ -32,6 +32,8 @@ function restoreSession() {
 }
 
 function initAdminAuth() {
+    document.getElementById('adminBtn').addEventListener('click', showLoginModal);
+
     restoreSession();
     
     document.getElementById('loginSubmit').addEventListener('click', async () => {
