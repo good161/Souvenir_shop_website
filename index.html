@@ -8,8 +8,25 @@
     <title>ЧГУ | Панель сервисов</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
+
+    <button id="adminLoginBtn" class="admin-login-btn">🔑 Вход</button>
+    <button id="adminLogoutBtn" class="admin-logout-btn">🚪 Выход</button>
+
+    <div id="loginModal" class="login-modal">
+        <div class="login-modal-content">
+            <h3>🔐 Вход в админку</h3>
+            <p id="loginError" class="login-error">Неверный логин или пароль</p>
+            <input type="text" id="loginInput" placeholder="Логин">
+            <input type="password" id="passwordInput" placeholder="Пароль">
+            <div class="btn-group">
+                <button id="loginSubmit" class="btn-primary">Войти</button>
+                <button id="loginCancel" class="btn-secondary">Отмена</button>
+            </div>
+        </div>
+    </div>
     <div class="page-wrapper">
         <div class="brand-header">
             <div class="header-overlay">
@@ -90,7 +107,8 @@
     </div>
 
     <div id="toastMsg" class="toast-message"></div>
-
+    
+    <script src="js/admin-auth.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
