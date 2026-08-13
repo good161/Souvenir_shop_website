@@ -61,18 +61,21 @@ function initAdminAuth() {
 
             const data = await res.json();
 
-            if (data.success) {
-                authToken = data.token;
-                isAdmin = true;
-                adminRole = data.role;
-                localStorage.setItem('authToken', authToken);
-                localStorage.setItem('adminRole', data.role);
-                localStorage.setItem('isAdmin', 'true');
-                
-                errorElement.classList.remove('show');
-                document.getElementById('adminBtn').classList.add('active');
-                hideLoginModal();
-            } else {
+           if (data.success) {
+    authToken = data.token;
+    isAdmin = true;
+    adminRole = data.role;
+    localStorage.setItem('authToken', authToken);
+    localStorage.setItem('adminRole', data.role);
+    localStorage.setItem('isAdmin', 'true');
+    
+   
+    document.getElementById('showAdminsBtn').style.display = 'block';
+    
+    errorElement.classList.remove('show');
+    document.getElementById('adminBtn').classList.add('active');
+    hideLoginModal();
+} else {
                 errorElement.textContent = data.error || 'Неверный логин или пароль';
                 errorElement.classList.add('show');
             }
@@ -97,6 +100,7 @@ document.getElementById('adminBtn').addEventListener('click', () => {
         localStorage.removeItem('isAdmin');
         localStorage.removeItem('authToken');
         localStorage.removeItem('adminRole');
+         document.getElementById('showAdminsBtn').style.display = 'none';
         
         // Обновите интерфейс (если есть функции)
         if (typeof renderProducts === 'function') renderProducts(products);
