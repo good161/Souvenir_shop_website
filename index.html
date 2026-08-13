@@ -12,50 +12,9 @@
 </head>
 <body>
 
-    <button id="adminLoginBtn" class="admin-login-btn">🔑 Вход</button>
-    <button class="admin-btn" id="adminManageAdminsBtn">👥 Администраторы</button>
-    <button id="adminLogoutBtn" class="admin-logout-btn">🚪 Выход</button>
-
-    <div id="adminsModal" class="channels-modal">
-    <div class="channels-modal-content">
-        <h3>👥 Администраторы</h3>
-        <div id="adminsList"></div>
-        <div style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;">
-            <input type="text" id="newAdminUsername" placeholder="Логин" class="channels-input" style="flex:1;min-width:120px;">
-            <input type="password" id="newAdminPassword" placeholder="Пароль" class="channels-input" style="flex:1;min-width:120px;">
-            <select id="newAdminRole" class="channels-input" style="width:auto;">
-                <option value="manager">Менеджер</option>
-                <option value="admin">Админ</option>
-            </select>
-        </div>
-        <button id="addAdminBtn" class="channels-btn primary" style="margin-top:0.5rem;">➕ Добавить</button>
-        <button id="closeAdminsBtn" class="channels-btn" style="margin-top:0.5rem;">Закрыть</button>
-    </div>
-</div>
-
-<div id="changePasswordModal" class="channels-modal">
-    <div class="channels-modal-content">
-        <h3>🔑 Сменить пароль</h3>
-        <input type="password" id="newPassword" placeholder="Новый пароль" class="channels-input">
-        <div class="channels-buttons">
-            <button id="changePasswordBtn" class="channels-btn primary">Сохранить</button>
-            <button id="closeChangePasswordBtn" class="channels-btn">Отмена</button>
-        </div>
-    </div>
-</div>    
+    <button id="adminBtn" class="admin-button" title="Админ-панель">⚙️</button>
+    <button id="showAdminsBtn" class="scroll-button" style="top:80px;display:none;" title="Администраторы">👥</button>
     
-    <div id="loginModal" class="login-modal">
-        <div class="login-modal-content">
-            <h3>🔐 Вход в админку</h3>
-            <p id="loginError" class="login-error">Неверный логин или пароль</p>
-            <input type="text" id="loginInput" placeholder="Логин">
-            <input type="password" id="passwordInput" placeholder="Пароль">
-            <div class="btn-group">
-                <button id="loginSubmit" class="btn-primary">Войти</button>
-                <button id="loginCancel" class="btn-secondary">Отмена</button>
-            </div>
-        </div>
-    </div>
     <div class="page-wrapper">
         <div class="brand-header">
             <div class="header-overlay">
