@@ -100,26 +100,50 @@
         });
     }
 
-    if (localStorage.getItem('isAdmin') === 'true') {
-        document.getElementById('editChannelsBtn').style.display = 'inline-block';
-        document.querySelectorAll('.card-title').forEach(title => {
-            const editBtn = document.createElement('span');
-            editBtn.textContent = '✏️';
-            editBtn.style.cssText = 'font-size:0.9rem;margin-left:0.5rem;cursor:pointer;opacity:0.5;';
-            editBtn.title = 'Редактировать карточку';
-            title.appendChild(editBtn);
+  if (localStorage.getItem('isAdmin') === 'true') {
+    // Показываем кнопку редактирования каналов
+    const editChannelsBtn = document.getElementById('editChannelsBtn');
+    if (editChannelsBtn) editChannelsBtn.style.display = 'inline-block';
+    
+    document.querySelectorAll('.card-title').forEach(title => {
+        const editBtn = document.createElement('span');
+        editBtn.textContent = '✏️';
+        editBtn.style.cssText = 'font-size:0.9rem;margin-left:0.5rem;cursor:pointer;opacity:0.5;';
+        editBtn.title = 'Редактировать карточку';
+        title.appendChild(editBtn);
+        
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const cardEl = title.closest('.service-card');
-                const cardId = cardEl.getAttribute('data-service');
-                document.getElementById('editCardId').value = cardId;
-                document.getElementById('editCardName').value = title.childNodes[0].textContent;
-                document.getElementById('editCardDescription').value = cardEl.querySelector('.card-description').textContent;
-                document.getElementById('editCardModal').style.display = 'flex';
-            });
+            const cardEl = title.closest('.service-card');
+            const cardId = cardEl.getAttribute('data-service');
+            
+          
+            document.getElementById('editCardId').value = cardId;
+            document.getElementById('editCardName').value = title.childNodes[0].textContent;
+            
+          
+            const descField = document.getElementById('editCardDescription');
+            descField.value = cardEl.querySelector('.card-description').textContent;
+            
+            
+            document.getElementById('editCardModal').style.display = 'flex';
+            
+            descField.style.height = 'auto';
+            descField.style.height = descField.scrollHeight + 'px';
         });
-    }
+    });
+}
+// Динамическое изменение высоты при ручном вводе текста в модальном окне
+const descTextarea = document.getElementById('editCardDescription');
+if (descTextarea) {
+    descTextarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+}
+
+
 
     document.getElementById('editChannelsBtn').addEventListener('click', function() {
         document.getElementById('channelsModal').style.display = 'flex';
