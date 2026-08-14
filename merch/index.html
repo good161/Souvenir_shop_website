@@ -18,8 +18,6 @@
 <body>
     <div class="page-wrapper">
         <a href="../index.html" class="back-button">← На главную</a>
-        <button id="adminBtn" class="admin-button" title="Админ-панель">⚙️</button>
-        <button id="showAdminsBtn" class="scroll-button" style="top:80px;display:none;" title="Администраторы">👥</button>
         
         <div class="app-layout">
             <section class="products-container">
@@ -60,19 +58,6 @@
         </footer>
     </div>
 
-    <!-- Вход -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <h3>Вход в админ-панель</h3>
-            <input type="text" id="loginInput" placeholder="Логин" class="modal-input">
-            <input type="password" id="passwordInput" placeholder="Пароль" class="modal-input">
-            <div class="modal-buttons">
-                <button id="loginSubmit" class="modal-btn primary">Войти</button>
-                <button id="loginCancel" class="modal-btn">Отмена</button>
-            </div>
-            <p id="loginError" class="error-msg"></p>
-        </div>
-    </div>
 
     <!-- Добавление/редактирование товара -->
     <div id="productModal" class="modal">
@@ -101,41 +86,10 @@
         </div>
     </div>
 
-    <!-- Администраторы -->
-    <div id="adminsModal" class="modal">
-        <div class="modal-content">
-            <h3>Администраторы</h3>
-            <div id="adminsList"></div>
-            <div style="display:flex;gap:0.5rem;margin-top:1rem;">
-                <input type="text" id="newAdminUsername" placeholder="Логин" class="modal-input" style="flex:1;">
-                <input type="password" id="newAdminPassword" placeholder="Пароль" class="modal-input" style="flex:1;">
-                <select id="newAdminRole" class="modal-input" style="width:auto;">
-                    <option value="manager">Менеджер</option>
-                </select>
-            </div>
-            <button id="addAdminBtn" class="modal-btn primary" style="margin-top:0.5rem;">Добавить</button>
-            <button id="closeAdminsBtn" class="modal-btn" style="margin-top:0.5rem;">Закрыть</button>
-        </div>
-    </div>
-
-    <!-- Смена пароля -->
-    <div id="changePasswordModal" class="modal">
-        <div class="modal-content">
-            <h3>Сменить пароль</h3>
-            <input type="password" id="newPassword" placeholder="Новый пароль" class="modal-input">
-            <div class="modal-buttons">
-                <button id="changePasswordBtn" class="modal-btn primary">Сохранить</button>
-                <button id="closeChangePasswordBtn" class="modal-btn">Отмена</button>
-            </div>
-        </div>
-    </div>
-
     <script src="js/data.js"></script>
     <script src="js/filters.js"></script>
     <script src="js/render-card.js"></script>
     <script src="js/render-grid.js"></script>
-    <script src="js/admin-auth.js"></script>
-    <script src="js/admin-variants.js"></script>
     <script src="js/admin-products.js"></script>
     <script src="js/admin-managers.js"></script>
     <script src="js/admin.js"></script>
