@@ -25,6 +25,16 @@
     .card-link {
         font-size: 0.75rem;
     }
+    .admin-button {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    .scroll-button {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
 }
 
 @media (max-width: 640px) {
@@ -74,34 +84,130 @@
         font-size: 0.6rem;
         padding: 0.2rem 0.6rem;
     }
+    .admin-button {
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+    .scroll-button {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+        right: 10px;
+    }
+    #showAdminsBtn {
+        top: 60px !important;
+    }
+    #showAddCardModal {
+        top: 105px !important;
+    }
+    .modal-content {
+        padding: 1rem;
+        border-radius: 16px;
+        max-width: 100%;
+    }
+    .channels-modal-content {
+        padding: 1rem;
+        border-radius: 16px;
+    }
+    .channels-input {
+        font-size: 0.8rem;
+        padding: 0.6rem 0.8rem;
+        min-height: 45px;
+    }
+    .channels-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.78rem;
+    }
 }
 
 @media (max-width: 480px) {
     .brand-header {
         height: 160px;
+        padding: 0 0.5rem;
+    }
+    .header-overlay {
+        padding: 0 0.8rem 1.2rem 0.8rem;
     }
     .header-overlay p {
         font-size: 0.8rem;
+        text-align: center;
     }
     .services-grid {
+        grid-template-columns: 1fr 1fr;
         gap: 0.6rem;
         padding: 0.6rem;
     }
     .service-card {
         border-radius: 0.9rem;
     }
+    .card-accent {
+        height: 3px;
+    }
     .card-content {
         padding: 0.6rem;
     }
     .card-title {
         font-size: 0.85rem;
+        margin-bottom: 0.3rem;
     }
     .card-description {
         font-size: 0.63rem;
         margin-bottom: 0.4rem;
+        line-height: 1.3;
     }
     .card-link {
         font-size: 0.63rem;
+        gap: 0.3rem;
+    }
+    .admin-button {
+        top: 8px;
+        right: 8px;
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    .scroll-button {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+        right: 8px;
+    }
+    #showAdminsBtn {
+        top: 50px !important;
+    }
+    #showAddCardModal {
+        top: 90px !important;
+    }
+    .modal-content {
+        padding: 0.8rem;
+        border-radius: 14px;
+    }
+    .channels-modal-content {
+        padding: 0.8rem;
+        border-radius: 14px;
+    }
+    .channels-input {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.7rem;
+        min-height: 40px;
+        border-radius: 8px;
+    }
+    .channels-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.7rem;
+        border-radius: 8px;
+    }
+    .footer-note {
+        padding: 0.5rem 0.6rem;
+        gap: 0.3rem;
+        font-size: 0.6rem;
+    }
+    .badge-mini {
+        font-size: 0.55rem;
+        padding: 0.15rem 0.5rem;
     }
 }
 
@@ -110,7 +216,7 @@
         height: 140px;
     }
     .header-overlay {
-        padding: 0 0.8rem 1.2rem 0.8rem;
+        padding: 0 0.5rem 1rem 0.5rem;
     }
     .header-overlay p {
         font-size: 0.75rem;
@@ -132,23 +238,62 @@
     .card-title {
         font-size: 0.8rem;
         margin-bottom: 0.3rem;
+        letter-spacing: -0.2px;
     }
     .card-description {
         font-size: 0.6rem;
         margin-bottom: 0.4rem;
-        line-height: 1.3;
+        line-height: 1.2;
     }
     .card-link {
         font-size: 0.6rem;
-        gap: 0.3rem;
+        gap: 0.2rem;
+    }
+    .admin-button {
+        top: 5px;
+        right: 5px;
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    .scroll-button {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+        right: 5px;
+    }
+    #showAdminsBtn {
+        top: 40px !important;
+    }
+    #showAddCardModal {
+        top: 75px !important;
+    }
+    .modal-content {
+        padding: 0.6rem;
+        border-radius: 12px;
+    }
+    .channels-modal-content {
+        padding: 0.6rem;
+        border-radius: 12px;
+    }
+    .channels-input {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.6rem;
+        min-height: 35px;
+        border-radius: 6px;
+    }
+    .channels-btn {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.65rem;
+        border-radius: 6px;
     }
     .footer-note {
-        padding: 0.5rem 0.6rem;
+        padding: 0.4rem 0.5rem;
         gap: 0.3rem;
-        font-size: 0.6rem;
+        font-size: 0.55rem;
     }
     .badge-mini {
-        font-size: 0.55rem;
-        padding: 0.15rem 0.5rem;
+        font-size: 0.5rem;
+        padding: 0.1rem 0.4rem;
     }
 }
