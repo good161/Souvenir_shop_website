@@ -15,6 +15,12 @@ if (localStorage.getItem('isAdmin') === 'true') {
 function updateAdminUI() {
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
     
+    // Показываем/скрываем кнопку добавления карточки
+    const addCardBtn = document.getElementById('addCardBtn');
+    if (addCardBtn) {
+        addCardBtn.style.display = isAdmin ? 'block' : 'none';
+    }
+    
     // Добавляем/удаляем иконки редактирования карточек
     if (isAdmin) {
         document.querySelectorAll('.service-card').forEach(card => {
