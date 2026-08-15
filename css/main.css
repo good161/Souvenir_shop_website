@@ -71,6 +71,7 @@ body {
 }
 
 .service-card {
+    position: relative;
     background: #ffffff;
     border-radius: 1.5rem;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08), 0 0 0 1px #e5e5e5;
