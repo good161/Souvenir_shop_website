@@ -51,6 +51,8 @@ function requireRole(role) {
     };
 }
 
+// ==================== АВТОРИЗАЦИЯ ====================
+
 app.post('/api/login', async (req, res) => {
     const { login, password } = req.body;
     if (!login || !password) return res.status(400).json({ error: 'Логин и пароль обязательны' });
@@ -66,6 +68,8 @@ app.post('/api/login', async (req, res) => {
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
+
+// ==================== АДМИНИСТРАТОРЫ ====================
 
 app.get('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
     try {
@@ -96,6 +100,20 @@ app.delete('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), asyn
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
+
+app.post('/api/change-password', authenticateToken, async (req, res) => {
+    const { password } = req.body;
+    if (!password) return res.status(400).json({ error: 'Пароль обязателен' });
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await pool.query('UPDATE admins SET password_hash = $1 WHERE id = $2', [hashedPassword, req.user.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+// ==================== ТОВАРЫ ====================
 
 app.get('/api/products', async (req, res) => {
     try {
@@ -145,6 +163,8 @@ app.patch('/api/products/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// ==================== ИЗОБРАЖЕНИЯ (CLOUDINARY) ====================
+
 app.post('/api/delete-image', authenticateToken, async (req, res) => {
     const { imageUrl } = req.body;
     if (!imageUrl || imageUrl.includes('placehold.co')) return res.json({ success: true });
@@ -178,6 +198,8 @@ app.post('/api/delete-image', authenticateToken, async (req, res) => {
     }
 });
 
+// ==================== КАНАЛЫ ====================
+
 app.get('/api/channels', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM channels ORDER BY display_order, id');
@@ -189,6 +211,7 @@ app.get('/api/channels', async (req, res) => {
 
 app.post('/api/channels', authenticateToken, async (req, res) => {
     const { name, url, icon } = req.body;
+    if (!name || !url) return res.status(400).json({ error: 'Название и URL обязательны' });
     try {
         await pool.query('INSERT INTO channels (name, url, icon) VALUES ($1,$2,$3)', [name, url, icon || '🌐']);
         res.json({ success: true });
@@ -218,10 +241,26 @@ app.delete('/api/channels/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// ==================== КАРТОЧКИ ====================
+
 app.get('/api/cards', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM cards ORDER BY display_order');
+        const result = await pool.query('SELECT * FROM cards ORDER BY display_order, id');
         res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+app.post('/api/cards', authenticateToken, async (req, res) => {
+    const { id, name, description, url } = req.body;
+    if (!id || !name) return res.status(400).json({ error: 'ID и название обязательны' });
+    try {
+        await pool.query(
+            'INSERT INTO cards (id, name, description, url) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO UPDATE SET name = $2, description = $3, url = $4',
+            [id, name, description || '', url || '']
+        );
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Ошибка сервера' });
     }
@@ -239,6 +278,17 @@ app.patch('/api/cards/:id', authenticateToken, async (req, res) => {
     }
 });
 
+app.delete('/api/cards/:id', authenticateToken, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM cards WHERE id = $1', [req.params.id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+// ==================== ССЫЛКИ КАРТОЧЕК ====================
+
 app.get('/api/card-links/:cardId', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM card_links WHERE card_id = $1 ORDER BY display_order, id', [req.params.cardId]);
@@ -250,6 +300,7 @@ app.get('/api/card-links/:cardId', async (req, res) => {
 
 app.post('/api/card-links', authenticateToken, async (req, res) => {
     const { card_id, name, url, description } = req.body;
+    if (!card_id || !name || !url) return res.status(400).json({ error: 'Все поля обязательны' });
     try {
         await pool.query('INSERT INTO card_links (card_id, name, url, description) VALUES ($1,$2,$3,$4)', [card_id, name, url, description || '']);
         res.json({ success: true });
