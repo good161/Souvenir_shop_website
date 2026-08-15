@@ -63,12 +63,12 @@
             }
             
             if (channels.length === 0) {
-                list.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem;">Нет каналов</p>';
+                list.innerHTML = '<span style="color:#94a3b8;">Нет каналов</span>';
                 return;
             }
             
             list.innerHTML = channels.map((c, i) => `
-                <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;background:#f8fafc;border-radius:8px;margin-bottom:0.3rem;">
+                <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
                     <button onclick="moveChannel(${c.id}, ${i}, -1)" ${i === 0 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▲</button>
                     <button onclick="moveChannel(${c.id}, ${i}, 1)" ${i === channels.length - 1 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▼</button>
                     <input type="text" value="${escapeValueAttr(c.name)}" onchange="updateChannel(${c.id}, 'name', this.value)" style="flex:1;min-width:100px;padding:0.4rem;border:2px solid #e2e8f0;border-radius:6px;font-size:0.8rem;">
@@ -206,53 +206,31 @@
         document.getElementById('editCardModal').style.display = 'flex';
         
         if (cardId === 'official-channels') {
-            const modalContent = document.querySelector('#editCardModal .channels-modal-content');
-            if (modalContent) {
-                const oldSection = document.getElementById('channelsEditSection');
-                if (oldSection) oldSection.remove();
+            // Перемещаем содержимое channelsModal внутрь editCardModal
+            const channelsModalContent = document.querySelector('#channelsModal .channels-modal-content');
+            const editCardModalContent = document.querySelector('#editCardModal .channels-modal-content');
+            
+            if (channelsModalContent && editCardModalContent) {
+                // Сохраняем оригинального родителя для возврата
+                const originalParent = channelsModalContent.parentElement;
                 
-                const channelsSection = document.createElement('div');
-                channelsSection.id = 'channelsEditSection';
-                channelsSection.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:2px solid #e2e8f0;';
+                // Перемещаем содержимое channelsModal в editCardModal
+                editCardModalContent.appendChild(channelsModalContent);
                 
-                channelsSection.innerHTML = `
-                    <h4 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:#1e293b;">Каналы</h4>
-                    <div id="channelsEditList"></div>
-                    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
-                        <input type="text" id="newChannelName" placeholder="Название канала" class="channels-input" style="flex:1;min-width:100px;margin-bottom:0;">
-                        <input type="text" id="newChannelUrl" placeholder="URL канала" class="channels-input" style="flex:2;min-width:150px;margin-bottom:0;">
-                    </div>
-                    <button id="addChannelInCardBtn" class="channels-btn primary" style="margin-top:0.5rem;">Добавить канал</button>
-                `;
-                modalContent.appendChild(channelsSection);
+                // Загружаем каналы
+                loadChannelsForEdit();
                 
-                // Загружаем каналы с небольшой задержкой, чтобы DOM точно обновился
-                setTimeout(() => {
-                    loadChannelsForEdit();
-                }, 100);
-                
-                document.getElementById('addChannelInCardBtn').addEventListener('click', async () => {
-                    const name = document.getElementById('newChannelName').value.trim();
-                    const url = document.getElementById('newChannelUrl').value.trim();
-                    if (!name || !url) return alert('Заполните название и URL');
-                    try {
-                        const res = await fetch('/api/channels', { 
-                            method: 'POST', 
-                            headers: getAuthHeaders(), 
-                            body: JSON.stringify({ name, url, icon: '🌐' }) 
-                        });
-                        if (!res.ok) throw new Error('Add failed');
-                        document.getElementById('newChannelName').value = '';
-                        document.getElementById('newChannelUrl').value = '';
-                        await Promise.all([loadChannels(), loadChannelsForEdit()]);
-                    } catch(e) {
-                        showMessage('Ошибка добавления');
-                    }
-                });
+                // Сохраняем ссылку для возврата при закрытии
+                window._channelsModalOriginalParent = originalParent;
+                window._channelsModalContent = channelsModalContent;
             }
         } else {
-            const channelsSection = document.getElementById('channelsEditSection');
-            if (channelsSection) channelsSection.remove();
+            // Возвращаем channelsModalContent на место если он был перемещён
+            if (window._channelsModalContent && window._channelsModalOriginalParent) {
+                window._channelsModalOriginalParent.appendChild(window._channelsModalContent);
+                window._channelsModalContent = null;
+                window._channelsModalOriginalParent = null;
+            }
         }
     };
 
@@ -276,8 +254,43 @@
     
     document.getElementById('closeEditCardBtn').addEventListener('click', () => {
         document.getElementById('editCardModal').style.display = 'none';
-        const channelsSection = document.getElementById('channelsEditSection');
-        if (channelsSection) channelsSection.remove();
+        // Возвращаем channelsModalContent на место
+        if (window._channelsModalContent && window._channelsModalOriginalParent) {
+            window._channelsModalOriginalParent.appendChild(window._channelsModalContent);
+            window._channelsModalContent = null;
+            window._channelsModalOriginalParent = null;
+        }
+    });
+
+    // Обработчики для кнопок channelsModal (которые теперь внутри editCardModal)
+    document.getElementById('closeChannelsBtn').addEventListener('click', () => {
+        // Просто скрываем editCardModal, так как channelsModal теперь внутри него
+        document.getElementById('editCardModal').style.display = 'none';
+        if (window._channelsModalContent && window._channelsModalOriginalParent) {
+            window._channelsModalOriginalParent.appendChild(window._channelsModalContent);
+            window._channelsModalContent = null;
+            window._channelsModalOriginalParent = null;
+        }
+    });
+
+    document.getElementById('addChannelBtn').addEventListener('click', async () => {
+        const name = document.getElementById('newChannelName').value.trim();
+        const url = document.getElementById('newChannelUrl').value.trim();
+        if (!name || !url) return alert('Заполните название и URL');
+        try {
+            const res = await fetch('/api/channels', { 
+                method: 'POST', 
+                headers: getAuthHeaders(), 
+                body: JSON.stringify({ name, url, icon: '🌐' }) 
+            });
+            if (!res.ok) throw new Error('Add failed');
+            document.getElementById('newChannelName').value = '';
+            document.getElementById('newChannelUrl').value = '';
+            loadChannelsForEdit();
+            loadChannels();
+        } catch(e) {
+            showMessage('Ошибка добавления');
+        }
     });
 
     loadChannels();
