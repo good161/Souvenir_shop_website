@@ -47,23 +47,8 @@ function updateAdminUI() {
             
             editBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const cardEl = card;
-                const cardId = cardEl.getAttribute('data-service');
-                const title = cardEl.querySelector('.card-title');
-                document.getElementById('editCardId').value = cardId;
-                
-                // Получаем текст названия без карандаша
-                let titleText = '';
-                for (const node of title.childNodes) {
-                    if (node.nodeType === Node.TEXT_NODE) {
-                        titleText += node.textContent;
-                    }
-                }
-                titleText = titleText.trim();
-                
-                document.getElementById('editCardName').value = titleText;
-                document.getElementById('editCardDescription').value = cardEl.querySelector('.card-description').textContent;
-                document.getElementById('editCardModal').style.display = 'flex';
+                const cardId = card.getAttribute('data-service');
+                window.openCardEditor(cardId);
             });
         });
     } else {
