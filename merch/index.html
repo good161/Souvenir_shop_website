@@ -1,63 +1,98 @@
-let products = [];
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="google-site-verification" content="R_8sgPcTCzbJSGuzMVT5Ft8fqcB6bZWigp1NoSuXoEs" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Сувенирная лавка ЧГУ</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <a href="../index.html" class="back-button">← На главную</a>
+        
+        <div class="app-layout">
+            <section class="products-container">
+                <div class="shop-header">
+                    <h1>Сувенирная лавка ЧГУ</h1>
+                </div>
+                
+                <div class="controls-bar">
+                    <div class="search-wrapper">
+                        <input type="text" id="searchInput" placeholder="🔍 Поиск по названию..." class="search-input">
+                    </div>
+                    
+                    <div class="filter-sort-bar">
+                        <div class="category-filters">
+                            <button class="cat-btn active" data-category="all">Все товары</button>
+                        </div>
+                        
+                        <div class="sort-bar">
+                            <span class="sort-label">Сортировка:</span>
+                            <button class="sort-btn active" data-sort="name">📋 По алфавиту</button>
+                            <button class="sort-btn" data-sort="asc">⬆️ Дешевле</button>
+                            <button class="sort-btn" data-sort="desc">⬇️ Дороже</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="productsGrid" class="products-grid">
+                    <div style="text-align: center; padding: 2rem;">Загрузка товаров...</div>
+                </div>
+            </section>
+        </div>
+        
+        <footer class="shop-footer">
+            <div class="footer-content">
+                <span>© 2026 ЧГУ | Сувенирная лавка</span>
+                <span>Все права защищены</span>
+            </div>
+        </footer>
+    </div>
 
-async function loadProductsFromDB() {
-    try {
-        const res = await fetch('/api/products');
-        products = await res.json();
-    } catch (err) {
-        products = [];
-    }
-}
 
-function updateCategoryButtons() {
-    const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
-    const container = document.querySelector('.category-filters');
-    container.querySelectorAll('.cat-btn:not([data-category="all"])').forEach(b => b.remove());
-    categories.sort((a, b) => a.localeCompare(b, 'ru')).forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = 'cat-btn';
-        btn.dataset.category = cat;
-        btn.textContent = cat;
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentCategory = this.dataset.category;
-            renderProducts(products);
-        });
-        container.appendChild(btn);
-    });
-}
+    <!-- Добавление/редактирование товара -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <h3 id="productModalTitle">Добавить товар</h3>
+            <input type="hidden" id="productId">
+            <input type="text" id="productName" placeholder="Название товара" class="modal-input">
+            <input type="text" id="productCategoryInput" placeholder="Категория" class="modal-input" list="categorySuggestions">
+            <datalist id="categorySuggestions"></datalist>
+            <input type="file" id="productImageFile" accept="image/jpeg,image/png,image/webp,image/gif" class="modal-input" multiple>
+            <div id="imagesPreview" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin:0.5rem 0;"></div>
+            <button id="removeMainImage" class="modal-btn small danger" style="display:none;margin-bottom:0.5rem;">Удалить все фото</button>
+            <p id="imageError" style="color:#ef4444;font-size:0.75rem;"></p>
+            <input type="number" id="productPrice" placeholder="Цена" class="modal-input">
+            <input type="text" id="productDescription" placeholder="Описание" class="modal-input">
+            <label class="checkbox-label"><input type="checkbox" id="productInStock" checked> В наличии</label>
+            <div id="variantsContainer">
+                <p style="font-size:0.8rem;color:#64748b;margin-top:0.5rem;">Варианты</p>
+                <div id="variantsList"></div>
+                <button id="addVariant" class="modal-btn small">+ Добавить вариант</button>
+            </div>
+            <div class="modal-buttons">
+                <button id="productSave" class="modal-btn primary">Сохранить</button>
+                <button id="productCancel" class="modal-btn">Отмена</button>
+            </div>
+        </div>
+    </div>
 
-(async function() {
-    await loadProductsFromDB();
-    updateCategoryButtons();
-
-    function init() {
-        renderProducts(products);
-
-        document.getElementById('searchInput').addEventListener('input', function() {
-            searchQuery = this.value;
-            renderProducts(products);
-        });
-
-        document.querySelectorAll('.cat-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentCategory = this.dataset.category;
-                renderProducts(products);
-            });
-        });
-
-        document.querySelectorAll('.sort-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentSortMode = this.dataset.sort;
-                renderProducts(products);
-            });
-        });
-    }
-
-    init();
-})();
+    <script src="js/data.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/render-card.js"></script>
+    <script src="js/render-grid.js"></script>
+    <script src="js/admin-products.js"></script>
+    <script src="js/admin-managers.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
