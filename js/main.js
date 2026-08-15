@@ -131,9 +131,9 @@
                 updateAdminUI();
             }
             
-            const addCardBtn = document.getElementById('addCardBtn');
-            if (addCardBtn) {
-                addCardBtn.style.display = localStorage.getItem('isAdmin') === 'true' ? 'block' : 'none';
+            const showAddCardModal = document.getElementById('showAddCardModal');
+            if (showAddCardModal) {
+                showAddCardModal.style.display = localStorage.getItem('isAdmin') === 'true' ? 'flex' : 'none';
             }
         } catch (err) {
             console.error('Error loading cards:', err);
@@ -213,7 +213,6 @@
             channelsSection.style.display = 'none';
         }
         
-        // Показываем кнопку удаления только для незащищённых карточек
         if (deleteBtn) {
             if (PROTECTED_CARDS.includes(cardId)) {
                 deleteBtn.style.display = 'none';
@@ -238,7 +237,6 @@
         document.getElementById('editCardModal').style.display = 'none';
     });
 
-    // Обработчик удаления карточки
     document.getElementById('deleteCardBtn').addEventListener('click', async () => {
         const id = document.getElementById('editCardId').value;
         
@@ -274,7 +272,6 @@
         loadChannels();
     });
 
-    // Обработчики для добавления карточки
     document.getElementById('showAddCardModal').addEventListener('click', () => {
         document.getElementById('newCardName').value = '';
         document.getElementById('newCardDescription').value = '';
@@ -291,11 +288,9 @@
         
         if (!name) return alert('Введите название карточки');
         
-        // Получаем все карточки для генерации следующего ID и display_order
         const res = await fetch('/api/cards');
         const cards = await res.json();
         
-        // Находим максимальный номер среди карточек вида card-N
         let maxNum = 0;
         cards.forEach(card => {
             const match = card.id.match(/^card-(\d+)$/);
@@ -304,7 +299,6 @@
             }
         });
         
-        // Находим максимальный display_order для вставки в конец
         const maxOrder = cards.reduce((max, card) => Math.max(max, card.display_order || 0), 0);
         
         const newId = `card-${maxNum + 1}`;
