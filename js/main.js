@@ -1,5 +1,6 @@
 (function() {
     const toast = document.getElementById('toastMsg');
+    const PROTECTED_CARDS = ['merch', 'official-channels', 'it-services', 'bots'];
     
     function showMessage(text, duration = 2300) {
         if (!toast) return;
@@ -203,11 +204,22 @@
         }, 50);
         
         const channelsSection = document.getElementById('channelsEditSection');
+        const deleteBtn = document.getElementById('deleteCardBtn');
+        
         if (cardId === 'official-channels') {
             channelsSection.style.display = 'block';
             loadChannelsForEdit();
         } else {
             channelsSection.style.display = 'none';
+        }
+        
+        // Показываем кнопку удаления только для незащищённых карточек
+        if (deleteBtn) {
+            if (PROTECTED_CARDS.includes(cardId)) {
+                deleteBtn.style.display = 'none';
+            } else {
+                deleteBtn.style.display = 'inline-block';
+            }
         }
         
         document.getElementById('editCardModal').style.display = 'flex';
@@ -224,6 +236,31 @@
     
     document.getElementById('closeEditCardBtn').addEventListener('click', () => {
         document.getElementById('editCardModal').style.display = 'none';
+    });
+
+    // Обработчик удаления карточки
+    document.getElementById('deleteCardBtn').addEventListener('click', async () => {
+        const id = document.getElementById('editCardId').value;
+        
+        if (PROTECTED_CARDS.includes(id)) {
+            showMessage('Эту карточку удалить нельзя');
+            return;
+        }
+        
+        if (!confirm('Удалить карточку?')) return;
+        
+        try {
+            const res = await fetch(`/api/cards/${id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            if (!res.ok) throw new Error('Failed to delete card');
+            document.getElementById('editCardModal').style.display = 'none';
+            loadCards();
+            showMessage('Карточка удалена');
+        } catch (e) {
+            showMessage('Ошибка удаления');
+        }
     });
 
     document.getElementById('addChannelBtn').addEventListener('click', async () => {
@@ -254,7 +291,7 @@
         
         if (!name) return alert('Введите название карточки');
         
-        // Получаем все карточки для генерации следующего ID
+        // Получаем все карточки для генерации следующего ID и display_order
         const res = await fetch('/api/cards');
         const cards = await res.json();
         
@@ -267,14 +304,18 @@
             }
         });
         
+        // Находим максимальный display_order для вставки в конец
+        const maxOrder = cards.reduce((max, card) => Math.max(max, card.display_order || 0), 0);
+        
         const newId = `card-${maxNum + 1}`;
         const url = `services.html?id=${newId}`;
+        const displayOrder = maxOrder + 1;
         
         try {
             const createRes = await fetch('/api/cards', {
                 method: 'POST',
                 headers: getAuthHeaders(),
-                body: JSON.stringify({ id: newId, name, description, url })
+                body: JSON.stringify({ id: newId, name, description, url, display_order: displayOrder })
             });
             if (!createRes.ok) throw new Error('Failed to create card');
             document.getElementById('addCardModal').style.display = 'none';
