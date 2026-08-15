@@ -306,7 +306,7 @@ body {
 }
 
 .channels-input {
-    width: 90%;
+    width: 100%;
     display: block;
     margin-bottom: 1rem; 
     padding: 0.9rem 0.5rem;
@@ -317,11 +317,14 @@ body {
     transition: border-color 0.2s; 
     min-height: 60px; 
     font-family: inherit;
-    line-height: 1.5;    
+    line-height: 1.5;
+    box-sizing: border-box;
 }
+
 input.channels-input {
     height: auto;
 }
+
 .channels-input:focus {
     border-color: #e31e24;
 }
