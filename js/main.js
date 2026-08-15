@@ -93,57 +93,59 @@
     function bindCardEvents() {
         document.querySelectorAll('.service-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
+                if (e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('.edit-icon')) return;
                 const url = card.getAttribute('data-url');
                 if (url) { showMessage('Загрузка...'); setTimeout(() => { window.location.href = url; }, 500); }
             });
         });
     }
 
-  if (localStorage.getItem('isAdmin') === 'true') {
-    // Показываем кнопку редактирования каналов
-    const editChannelsBtn = document.getElementById('editChannelsBtn');
-    if (editChannelsBtn) editChannelsBtn.style.display = 'inline-block';
-    
-    document.querySelectorAll('.card-title').forEach(title => {
-        const editBtn = document.createElement('span');
-        editBtn.textContent = '✏️';
-        editBtn.style.cssText = 'font-size:0.9rem;margin-left:0.5rem;cursor:pointer;opacity:0.5;';
-        editBtn.title = 'Редактировать карточку';
-        title.appendChild(editBtn);
-        
-        editBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
+    function addEditIcons() {
+        document.querySelectorAll('.service-card').forEach(card => {
+            // Проверяем, нет ли уже карандаша
+            if (card.querySelector('.edit-icon')) return;
             
-            const cardEl = title.closest('.service-card');
-            const cardId = cardEl.getAttribute('data-service');
+            const editBtn = document.createElement('span');
+            editBtn.textContent = '✏️';
+            editBtn.className = 'edit-icon';
+            editBtn.style.cssText = 'position:absolute;top:1rem;right:1rem;font-size:1rem;cursor:pointer;opacity:0.5;transition:opacity 0.2s;z-index:10;';
+            editBtn.title = 'Редактировать карточку';
             
-          
-            document.getElementById('editCardId').value = cardId;
-            document.getElementById('editCardName').value = title.childNodes[0].textContent;
+            editBtn.addEventListener('mouseenter', () => editBtn.style.opacity = '1');
+            editBtn.addEventListener('mouseleave', () => editBtn.style.opacity = '0.5');
             
-          
-            const descField = document.getElementById('editCardDescription');
-            descField.value = cardEl.querySelector('.card-description').textContent;
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const cardId = card.getAttribute('data-service');
+                const title = card.querySelector('.card-title');
+                
+                document.getElementById('editCardId').value = cardId;
+                document.getElementById('editCardName').value = title.childNodes[0].textContent.trim();
+                document.getElementById('editCardDescription').value = card.querySelector('.card-description').textContent;
+                document.getElementById('editCardModal').style.display = 'flex';
+            });
             
-            
-            document.getElementById('editCardModal').style.display = 'flex';
-            
-            descField.style.height = 'auto';
-            descField.style.height = descField.scrollHeight + 'px';
+            card.appendChild(editBtn);
         });
-    });
-}
-// Динамическое изменение высоты при ручном вводе текста в модальном окне
-const descTextarea = document.getElementById('editCardDescription');
-if (descTextarea) {
-    descTextarea.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = this.scrollHeight + 'px';
-    });
-}
+    }
 
+    if (localStorage.getItem('isAdmin') === 'true') {
+        // Показываем кнопку редактирования каналов
+        const editChannelsBtn = document.getElementById('editChannelsBtn');
+        if (editChannelsBtn) editChannelsBtn.style.display = 'inline-block';
+        
+        // Добавляем карандаши на карточки
+        addEditIcons();
+    }
 
+    // Динамическое изменение высоты при ручном вводе текста в модальном окне
+    const descTextarea = document.getElementById('editCardDescription');
+    if (descTextarea) {
+        descTextarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    }
 
     document.getElementById('editChannelsBtn').addEventListener('click', function() {
         document.getElementById('channelsModal').style.display = 'flex';
