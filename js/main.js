@@ -239,5 +239,41 @@
         loadChannels();
     });
 
+    // Обработчики для добавления карточки
+    document.getElementById('showAddCardModal').addEventListener('click', () => {
+        document.getElementById('newCardName').value = '';
+        document.getElementById('newCardDescription').value = '';
+        document.getElementById('newCardUrl').value = '';
+        document.getElementById('addCardModal').style.display = 'flex';
+    });
+
+    document.getElementById('closeAddCardBtn').addEventListener('click', () => {
+        document.getElementById('addCardModal').style.display = 'none';
+    });
+
+    document.getElementById('createCardBtn').addEventListener('click', async () => {
+        const name = document.getElementById('newCardName').value.trim();
+        const description = document.getElementById('newCardDescription').value.trim();
+        const url = document.getElementById('newCardUrl').value.trim();
+        
+        if (!name) return alert('Введите название карточки');
+        
+        const newId = name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now();
+        
+        try {
+            const res = await fetch('/api/cards', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ id: newId, name, description, url })
+            });
+            if (!res.ok) throw new Error('Failed to create card');
+            document.getElementById('addCardModal').style.display = 'none';
+            loadCards();
+            showMessage('Карточка добавлена');
+        } catch (e) {
+            showMessage('Ошибка добавления');
+        }
+    });
+
     loadCards();
 })();
