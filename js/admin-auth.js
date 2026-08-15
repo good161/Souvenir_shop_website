@@ -29,7 +29,7 @@ function updateAdminUI() {
             const editBtn = document.createElement('span');
             editBtn.textContent = '✏️';
             editBtn.className = 'edit-icon';
-            editBtn.style.cssText = 'position:absolute;top:1rem;right:1rem;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:white;border:2px solid #e31e24;cursor:pointer;opacity:0.7;transition:opacity 0.2s,transform 0.2s,box-shadow 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.1);font-size:0.9rem;z-index:10;';
+            editBtn.style.cssText = 'position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:white;border:2px solid #e31e24;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0.7;transition:opacity 0.2s,transform 0.2s,box-shadow 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.1);font-size:0.9rem;z-index:10;line-height:1;padding:0;';
             editBtn.title = 'Редактировать карточку';
             card.appendChild(editBtn);
             
