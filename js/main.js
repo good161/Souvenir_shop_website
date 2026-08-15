@@ -109,10 +109,80 @@
         });
     }
 
-    document.getElementById('editChannelsBtn').addEventListener('click', function() {
-        document.getElementById('channelsModal').style.display = 'flex';
-        loadChannelsForEdit();
+    // Объединённая функция редактирования карточки
+    window.openCardEditor = function(cardId) {
+        const card = document.querySelector(`[data-service="${cardId}"]`);
+        if (!card) return;
+        
+        const title = card.querySelector('.card-title');
+        const description = card.querySelector('.card-description');
+        
+        document.getElementById('editCardId').value = cardId;
+        
+        // Получаем текст названия без карандаша
+        let titleText = '';
+        for (const node of title.childNodes) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                titleText += node.textContent;
+            }
+        }
+        titleText = titleText.trim();
+        
+        document.getElementById('editCardName').value = titleText;
+        document.getElementById('editCardDescription').value = description ? description.textContent : '';
+        
+        // Показываем модальное окно
+        document.getElementById('editCardModal').style.display = 'flex';
+        
+        // Если это карточка каналов, добавляем секцию редактирования каналов
+        if (cardId === 'official-channels') {
+            // Добавляем кнопку для редактирования каналов в модальное окно
+            const modalContent = document.querySelector('#editCardModal .channels-modal-content');
+            if (modalContent) {
+                // Проверяем, есть ли уже секция каналов
+                let channelsSection = document.getElementById('channelsEditSection');
+                if (!channelsSection) {
+                    channelsSection = document.createElement('div');
+                    channelsSection.id = 'channelsEditSection';
+                    channelsSection.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:2px solid #e2e8f0;';
+                    channelsSection.innerHTML = `
+                        <h4 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:#1e293b;">Каналы</h4>
+                        <div id="channelsEditList"></div>
+                        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
+                            <input type="text" id="newChannelName" placeholder="Название канала" class="channels-input" style="flex:1;min-width:100px;margin-bottom:0;">
+                            <input type="text" id="newChannelUrl" placeholder="URL канала" class="channels-input" style="flex:2;min-width:150px;margin-bottom:0;">
+                        </div>
+                        <button id="addChannelInCardBtn" class="channels-btn primary" style="margin-top:0.5rem;">Добавить канал</button>
+                    `;
+                    modalContent.appendChild(channelsSection);
+                    
+                    // Добавляем обработчик для кнопки добавления канала
+                    document.getElementById('addChannelInCardBtn').addEventListener('click', async () => {
+                        const name = document.getElementById('newChannelName').value.trim();
+                        const url = document.getElementById('newChannelUrl').value.trim();
+                        if (!name || !url) return alert('Заполните название и URL');
+                        await fetch('/api/channels', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ name, url, icon: '🌐' }) });
+                        document.getElementById('newChannelName').value = '';
+                        document.getElementById('newChannelUrl').value = '';
+                        loadChannelsForEdit();
+                        loadChannels();
+                    });
+                }
+                // Загружаем каналы для редактирования
+                loadChannelsForEdit();
+            }
+        } else {
+            // Удаляем секцию каналов для других карточек
+            const channelsSection = document.getElementById('channelsEditSection');
+            if (channelsSection) channelsSection.remove();
+        }
+    };
+
+    document.getElementById('editChannelsBtn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        window.openCardEditor('official-channels');
     });
+    
     document.getElementById('closeChannelsBtn').addEventListener('click', () => document.getElementById('channelsModal').style.display = 'none');
 
     document.getElementById('addChannelBtn').addEventListener('click', async () => {
@@ -134,7 +204,12 @@
         document.getElementById('editCardModal').style.display = 'none';
         loadCards();
     });
-    document.getElementById('closeEditCardBtn').addEventListener('click', () => document.getElementById('editCardModal').style.display = 'none');
+    document.getElementById('closeEditCardBtn').addEventListener('click', () => {
+        document.getElementById('editCardModal').style.display = 'none';
+        // Удаляем секцию каналов при закрытии
+        const channelsSection = document.getElementById('channelsEditSection');
+        if (channelsSection) channelsSection.remove();
+    });
 
     loadChannels();
     loadCards();
