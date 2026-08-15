@@ -65,27 +65,27 @@
         </div>
     </div>
 
-    <div id="channelsModal" class="channels-modal">
-        <div class="channels-modal-content">
-            <h3>Редактировать каналы</h3>
-            <div id="channelsEditList"></div>
-            <div class="channels-add-row">
-                <input type="text" id="newChannelName" placeholder="Название" class="channels-input" style="flex:1;">
-                <input type="text" id="newChannelUrl" placeholder="URL" class="channels-input" style="flex:2;">
-            </div>
-            <div class="channels-buttons">
-                <button id="addChannelBtn" class="channels-btn primary">Добавить</button>
-                <button id="closeChannelsBtn" class="channels-btn">Закрыть</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- Редактирование карточки -->
     <div id="editCardModal" class="channels-modal">
         <div class="channels-modal-content">
             <h3>Редактировать карточку</h3>
             <input type="hidden" id="editCardId">
             <textarea type="text" id="editCardName" placeholder="Название" class="channels-input" style="margin-top:0.5rem;"></textarea>
-            <textarea  type="text" id="editCardDescription" placeholder="Описание" class="channels-input" style="margin-top:0.5rem;"></textarea>
+            <textarea type="text" id="editCardDescription" placeholder="Описание" class="channels-input" style="margin-top:0.5rem;"></textarea>
+            
+            <!-- Секция каналов (видна только для official-channels) -->
+            <div id="channelsEditSection" style="display:none;margin-top:1rem;padding-top:1rem;border-top:2px solid #e2e8f0;">
+                <h4 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:#1e293b;">Каналы</h4>
+                <div id="channelsEditList"></div>
+                <div class="channels-add-row" style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
+                    <input type="text" id="newChannelName" placeholder="Название" class="channels-input" style="flex:1;min-width:100px;margin-bottom:0;">
+                    <input type="text" id="newChannelUrl" placeholder="URL" class="channels-input" style="flex:2;min-width:150px;margin-bottom:0;">
+                </div>
+                <div class="channels-buttons" style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                    <button id="addChannelBtn" class="channels-btn primary">Добавить</button>
+                </div>
+            </div>
+            
             <div class="channels-buttons">
                 <button id="saveCardBtn" class="channels-btn primary">Сохранить</button>
                 <button id="closeEditCardBtn" class="channels-btn">Закрыть</button>
