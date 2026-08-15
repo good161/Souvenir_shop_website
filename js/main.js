@@ -58,7 +58,7 @@
             const channels = await res.json();
             const list = document.getElementById('channelsEditList');
             if (!list) {
-                console.log('channelsEditList not found');
+                console.error('channelsEditList not found');
                 return;
             }
             
@@ -68,7 +68,7 @@
             }
             
             list.innerHTML = channels.map((c, i) => `
-                <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
+                <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;background:#f8fafc;border-radius:8px;margin-bottom:0.3rem;">
                     <button onclick="moveChannel(${c.id}, ${i}, -1)" ${i === 0 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▲</button>
                     <button onclick="moveChannel(${c.id}, ${i}, 1)" ${i === channels.length - 1 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▼</button>
                     <input type="text" value="${escapeValueAttr(c.name)}" onchange="updateChannel(${c.id}, 'name', this.value)" style="flex:1;min-width:100px;padding:0.4rem;border:2px solid #e2e8f0;border-radius:6px;font-size:0.8rem;">
@@ -226,7 +226,10 @@
                 `;
                 modalContent.appendChild(channelsSection);
                 
-                loadChannelsForEdit();
+                // Загружаем каналы с небольшой задержкой, чтобы DOM точно обновился
+                setTimeout(() => {
+                    loadChannelsForEdit();
+                }, 100);
                 
                 document.getElementById('addChannelInCardBtn').addEventListener('click', async () => {
                     const name = document.getElementById('newChannelName').value.trim();
