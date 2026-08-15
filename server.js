@@ -253,12 +253,12 @@ app.get('/api/cards', async (req, res) => {
 });
 
 app.post('/api/cards', authenticateToken, async (req, res) => {
-    const { id, name, description, url } = req.body;
+    const { id, name, description, url, display_order } = req.body;
     if (!id || !name) return res.status(400).json({ error: 'ID и название обязательны' });
     try {
         await pool.query(
-            'INSERT INTO cards (id, name, description, url) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO UPDATE SET name = $2, description = $3, url = $4',
-            [id, name, description || '', url || '']
+            'INSERT INTO cards (id, name, description, url, display_order) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO UPDATE SET name = $2, description = $3, url = $4, display_order = $5',
+            [id, name, description || '', url || '', display_order || 0]
         );
         res.json({ success: true });
     } catch (err) {
@@ -279,6 +279,10 @@ app.patch('/api/cards/:id', authenticateToken, async (req, res) => {
 });
 
 app.delete('/api/cards/:id', authenticateToken, async (req, res) => {
+    const protectedCards = ['merch', 'official-channels', 'it-services', 'bots'];
+    if (protectedCards.includes(req.params.id)) {
+        return res.status(403).json({ error: 'Эту карточку удалить нельзя' });
+    }
     try {
         await pool.query('DELETE FROM cards WHERE id = $1', [req.params.id]);
         res.json({ success: true });
