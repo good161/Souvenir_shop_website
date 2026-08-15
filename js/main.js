@@ -95,20 +95,46 @@
     async function loadCards() {
         try {
             const res = await fetch('/api/cards');
+            if (!res.ok) throw new Error('Failed to load cards');
             const cards = await res.json();
-            cards.forEach(card => {
-                const cardEl = document.querySelector(`[data-service="${card.id}"]`);
-                if (cardEl) {
-                    const title = cardEl.querySelector('.card-title');
-                    if (title && title.childNodes[0]) {
-                        title.childNodes[0].textContent = card.name;
-                    }
-                    const desc = cardEl.querySelector('.card-description');
-                    if (desc) desc.textContent = card.description;
-                    if (card.url) cardEl.setAttribute('data-url', card.url);
+            const grid = document.getElementById('servicesGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = cards.map(card => {
+                if (card.id === 'official-channels') {
+                    return `
+                        <div class="service-card" data-service="${card.id}">
+                            <div class="card-accent"></div>
+                            <div class="card-content">
+                                <div class="card-title">${escapeHtml(card.name)}</div>
+                                <div class="channels-grid" id="channelsGrid">Загрузка...</div>
+                            </div>
+                        </div>`;
+                } else {
+                    return `
+                        <div class="service-card" data-service="${card.id}" data-url="${escapeHtml(card.url || '')}">
+                            <div class="card-accent"></div>
+                            <div class="card-content">
+                                <div class="card-title">${escapeHtml(card.name)}</div>
+                                <div class="card-description">${escapeHtml(card.description || '')}</div>
+                                <span class="card-link">Перейти <span>→</span></span>
+                            </div>
+                        </div>`;
                 }
-            });
-        } catch (err) {}
+            }).join('');
+            
+            loadChannels();
+            bindCardEvents();
+            
+            // Показываем кнопку добавления если админ
+            if (localStorage.getItem('isAdmin') === 'true') {
+                document.getElementById('addCardBtn').style.display = 'block';
+            } else {
+                document.getElementById('addCardBtn').style.display = 'none';
+            }
+        } catch (err) {
+            console.error('Error loading cards:', err);
+        }
     }
 
     function bindCardEvents() {
@@ -121,14 +147,12 @@
         });
     }
 
-    // Функция для автоувеличения textarea
     function autoResizeTextarea(textarea) {
         if (!textarea) return;
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
     }
 
-    // Настройка textarea для названия
     const nameTextarea = document.getElementById('editCardName');
     if (nameTextarea) {
         nameTextarea.style.resize = 'none';
@@ -138,7 +162,6 @@
         });
     }
 
-    // Настройка textarea для описания
     const descTextarea = document.getElementById('editCardDescription');
     if (descTextarea) {
         descTextarea.style.resize = 'none';
@@ -172,13 +195,11 @@
         nameField.value = titleText.trim();
         descField.value = description ? description.textContent : '';
         
-        // Автоувеличение после установки значений
         setTimeout(() => {
             autoResizeTextarea(nameField);
             autoResizeTextarea(descField);
         }, 50);
         
-        // Показываем/скрываем секцию каналов
         const channelsSection = document.getElementById('channelsEditSection');
         if (cardId === 'official-channels') {
             channelsSection.style.display = 'block';
@@ -214,7 +235,41 @@
         loadChannels();
     });
 
-    loadChannels();
+    // Добавление новой карточки
+    document.getElementById('showAddCardModal').addEventListener('click', () => {
+        document.getElementById('addCardModal').style.display = 'flex';
+        document.getElementById('newCardName').value = '';
+        document.getElementById('newCardDescription').value = '';
+        document.getElementById('newCardUrl').value = '';
+    });
+
+    document.getElementById('closeAddCardBtn').addEventListener('click', () => {
+        document.getElementById('addCardModal').style.display = 'none';
+    });
+
+    document.getElementById('createCardBtn').addEventListener('click', async () => {
+        const name = document.getElementById('newCardName').value.trim();
+        const description = document.getElementById('newCardDescription').value.trim();
+        const url = document.getElementById('newCardUrl').value.trim();
+        
+        if (!name) return alert('Введите название карточки');
+        
+        const newId = name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now();
+        
+        try {
+            const res = await fetch('/api/cards', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ id: newId, name, description, url })
+            });
+            if (!res.ok) throw new Error('Failed to create card');
+            document.getElementById('addCardModal').style.display = 'none';
+            loadCards();
+            showMessage('Карточка добавлена');
+        } catch (e) {
+            showMessage('Ошибка добавления');
+        }
+    });
+
     loadCards();
-    bindCardEvents();
 })();
