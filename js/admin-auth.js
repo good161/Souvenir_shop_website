@@ -15,12 +15,6 @@ if (localStorage.getItem('isAdmin') === 'true') {
 function updateAdminUI() {
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
     
-    // Показываем/скрываем кнопку редактирования каналов
-    const editChannelsBtn = document.getElementById('editChannelsBtn');
-    if (editChannelsBtn) {
-        editChannelsBtn.style.display = isAdmin ? 'inline-block' : 'none';
-    }
-    
     // Добавляем/удаляем иконки редактирования карточек
     if (isAdmin) {
         document.querySelectorAll('.service-card').forEach(card => {
