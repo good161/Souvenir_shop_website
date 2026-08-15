@@ -103,29 +103,21 @@
     function addEditIcons() {
         document.querySelectorAll('.service-card').forEach(card => {
             // Проверяем, нет ли уже карандаша
-            if (card.querySelector('.edit-icon')) return;
+            const title = card.querySelector('.card-title');
+            if (!title || title.querySelector('.edit-icon')) return;
             
             const editBtn = document.createElement('span');
             editBtn.textContent = '✏️';
             editBtn.className = 'edit-icon';
-            editBtn.style.cssText = 'position:absolute;top:1rem;right:1rem;width:36px;height:36px;border-radius:50%;background:white;border:2px solid #e31e24;display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;opacity:0.7;transition:opacity 0.2s,transform 0.2s,box-shadow 0.2s;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.1);';
+            editBtn.style.cssText = 'font-size:0.9rem;margin-left:0.5rem;cursor:pointer;opacity:0.5;transition:opacity 0.2s;display:inline-block;vertical-align:middle;';
             editBtn.title = 'Редактировать карточку';
             
-            editBtn.addEventListener('mouseenter', () => {
-                editBtn.style.opacity = '1';
-                editBtn.style.transform = 'scale(1.1)';
-                editBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-            });
-            editBtn.addEventListener('mouseleave', () => {
-                editBtn.style.opacity = '0.7';
-                editBtn.style.transform = 'scale(1)';
-                editBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-            });
+            editBtn.addEventListener('mouseenter', () => editBtn.style.opacity = '1');
+            editBtn.addEventListener('mouseleave', () => editBtn.style.opacity = '0.5');
             
             editBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const cardId = card.getAttribute('data-service');
-                const title = card.querySelector('.card-title');
                 
                 document.getElementById('editCardId').value = cardId;
                 document.getElementById('editCardName').value = title.childNodes[0].textContent.trim();
@@ -133,7 +125,7 @@
                 document.getElementById('editCardModal').style.display = 'flex';
             });
             
-            card.appendChild(editBtn);
+            title.appendChild(editBtn);
         });
     }
 
