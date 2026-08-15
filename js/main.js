@@ -39,6 +39,12 @@
         const channels = await res.json();
         const list = document.getElementById('channelsEditList');
         if (!list) return;
+        
+        if (channels.length === 0) {
+            list.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem;">Нет каналов</p>';
+            return;
+        }
+        
         list.innerHTML = channels.map((c, i) => `
             <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
                 <button onclick="moveChannel(${c.id}, ${i}, -1)" ${i === 0 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▲</button>
@@ -140,37 +146,39 @@
         if (cardId === 'official-channels') {
             const modalContent = document.querySelector('#editCardModal .channels-modal-content');
             if (modalContent) {
-                // Проверяем, есть ли уже секция каналов
-                let channelsSection = document.getElementById('channelsEditSection');
-                if (!channelsSection) {
-                    channelsSection = document.createElement('div');
-                    channelsSection.id = 'channelsEditSection';
-                    channelsSection.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:2px solid #e2e8f0;';
-                    channelsSection.innerHTML = `
-                        <h4 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:#1e293b;">Каналы</h4>
-                        <div id="channelsEditList"></div>
-                        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
-                            <input type="text" id="newChannelName" placeholder="Название канала" class="channels-input" style="flex:1;min-width:100px;margin-bottom:0;">
-                            <input type="text" id="newChannelUrl" placeholder="URL канала" class="channels-input" style="flex:2;min-width:150px;margin-bottom:0;">
-                        </div>
-                        <button id="addChannelInCardBtn" class="channels-btn primary" style="margin-top:0.5rem;">Добавить канал</button>
-                    `;
-                    modalContent.appendChild(channelsSection);
-                    
-                    // Добавляем обработчик для кнопки добавления канала
-                    document.getElementById('addChannelInCardBtn').addEventListener('click', async () => {
-                        const name = document.getElementById('newChannelName').value.trim();
-                        const url = document.getElementById('newChannelUrl').value.trim();
-                        if (!name || !url) return alert('Заполните название и URL');
-                        await fetch('/api/channels', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ name, url, icon: '🌐' }) });
-                        document.getElementById('newChannelName').value = '';
-                        document.getElementById('newChannelUrl').value = '';
-                        loadChannelsForEdit();
-                        loadChannels();
-                    });
-                }
+                // Удаляем старую секцию, если есть
+                const oldSection = document.getElementById('channelsEditSection');
+                if (oldSection) oldSection.remove();
+                
+                // Создаём новую секцию
+                const channelsSection = document.createElement('div');
+                channelsSection.id = 'channelsEditSection';
+                channelsSection.style.cssText = 'margin-top:1rem;padding-top:1rem;border-top:2px solid #e2e8f0;';
+                channelsSection.innerHTML = `
+                    <h4 style="font-size:0.9rem;font-weight:600;margin-bottom:0.5rem;color:#1e293b;">Каналы</h4>
+                    <div id="channelsEditList"></div>
+                    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
+                        <input type="text" id="newChannelName" placeholder="Название канала" class="channels-input" style="flex:1;min-width:100px;margin-bottom:0;">
+                        <input type="text" id="newChannelUrl" placeholder="URL канала" class="channels-input" style="flex:2;min-width:150px;margin-bottom:0;">
+                    </div>
+                    <button id="addChannelInCardBtn" class="channels-btn primary" style="margin-top:0.5rem;">Добавить канал</button>
+                `;
+                modalContent.appendChild(channelsSection);
+                
                 // Загружаем каналы для редактирования
                 loadChannelsForEdit();
+                
+                // Добавляем обработчик для кнопки добавления канала
+                document.getElementById('addChannelInCardBtn').addEventListener('click', async () => {
+                    const name = document.getElementById('newChannelName').value.trim();
+                    const url = document.getElementById('newChannelUrl').value.trim();
+                    if (!name || !url) return alert('Заполните название и URL');
+                    await fetch('/api/channels', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ name, url, icon: '🌐' }) });
+                    document.getElementById('newChannelName').value = '';
+                    document.getElementById('newChannelUrl').value = '';
+                    loadChannelsForEdit();
+                    loadChannels();
+                });
             }
         } else {
             // Удаляем секцию каналов для других карточек
@@ -178,8 +186,6 @@
             if (channelsSection) channelsSection.remove();
         }
     };
-
-    // Удаляем обработчик для editChannelsBtn, так как кнопка удалена из HTML
 
     document.getElementById('saveCardBtn').addEventListener('click', async () => {
         const id = document.getElementById('editCardId').value;
