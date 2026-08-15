@@ -26,16 +26,14 @@
             <!-- Карточки загружаются из БД -->
         </div>
 
-        <!-- Кнопка добавления карточки (видна только админу) -->
-        <div id="addCardBtn" style="display:none;text-align:center;padding:0 2rem 2rem;">
-            <button id="showAddCardModal" class="modal-btn primary" style="padding:0.8rem 2rem;font-size:1rem;border-radius:30px;cursor:pointer;">+ Добавить карточку</button>
-        </div>
-
         <div class="footer-note">
             <span>© 2026 ЧГУ | Единая платформа сервисов</span>
             <div class="badge-mini">доступно авторизованным пользователям</div>
         </div>
     </div>
+
+    <!-- Кнопка добавления карточки (фиксированная справа) -->
+    <button id="showAddCardModal" class="scroll-button" style="top:140px;display:none;" title="Добавить карточку">➕</button>
 
     <!-- Редактирование карточки -->
     <div id="editCardModal" class="channels-modal">
