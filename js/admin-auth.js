@@ -38,7 +38,10 @@ function updateAdminUI() {
                     const cardEl = card;
                     const cardId = cardEl.getAttribute('data-service');
                     document.getElementById('editCardId').value = cardId;
-                    document.getElementById('editCardName').value = title.childNodes[0].textContent.trim();
+                    
+                    // Получаем текст названия без карандаша
+                    const titleText = title.childNodes[0].textContent.trim();
+                    document.getElementById('editCardName').value = titleText;
                     document.getElementById('editCardDescription').value = cardEl.querySelector('.card-description').textContent;
                     document.getElementById('editCardModal').style.display = 'flex';
                 });
