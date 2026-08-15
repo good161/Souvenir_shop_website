@@ -16,9 +16,9 @@ function updateAdminUI() {
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
     
     // Показываем/скрываем кнопку добавления карточки
-    const addCardBtn = document.getElementById('addCardBtn');
-    if (addCardBtn) {
-        addCardBtn.style.display = isAdmin ? 'block' : 'none';
+    const showAddCardModal = document.getElementById('showAddCardModal');
+    if (showAddCardModal) {
+        showAddCardModal.style.display = isAdmin ? 'flex' : 'none';
     }
     
     // Добавляем/удаляем иконки редактирования карточек
