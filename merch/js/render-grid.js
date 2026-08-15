@@ -35,10 +35,8 @@ function renderProducts(products) {
         sorted.forEach(product => grid.appendChild(renderProductCard(product)));
     }
 
-    // Обработчики для выбора вариантов
     document.querySelectorAll('.variant-option input[type="radio"]:not([disabled])').forEach(radio => {
-        radio.addEventListener('change', function(e) {
-            e.stopPropagation();
+        radio.addEventListener('change', function() {
             const productId = this.name.replace('variant-', '');
             const price = parseInt(this.dataset.price);
             const description = this.dataset.description;
@@ -62,11 +60,9 @@ function renderProducts(products) {
         });
     });
 
-    // Обработчики для галереи
     document.querySelectorAll('.gallery-arrow').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
-            e.preventDefault();
             const productId = this.dataset.product;
             const card = document.querySelector(`.product-card[data-id="${productId}"]`);
             if (!card) return;
