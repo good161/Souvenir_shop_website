@@ -38,6 +38,7 @@
         const res = await fetch('/api/channels');
         const channels = await res.json();
         const list = document.getElementById('channelsEditList');
+        if (!list) return;
         list.innerHTML = channels.map((c, i) => `
             <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
                 <button onclick="moveChannel(${c.id}, ${i}, -1)" ${i === 0 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▲</button>
@@ -52,6 +53,7 @@
     window.updateChannel = async function(id, field, value) {
         await fetch(`/api/channels/${id}`, { method: 'PATCH', headers: getAuthHeaders(), body: JSON.stringify({ [field]: value }) });
         loadChannels();
+        loadChannelsForEdit();
     };
 
     window.moveChannel = async function(id, index, direction) {
@@ -136,7 +138,6 @@
         
         // Если это карточка каналов, добавляем секцию редактирования каналов
         if (cardId === 'official-channels') {
-            // Добавляем кнопку для редактирования каналов в модальное окно
             const modalContent = document.querySelector('#editCardModal .channels-modal-content');
             if (modalContent) {
                 // Проверяем, есть ли уже секция каналов
@@ -178,23 +179,7 @@
         }
     };
 
-    document.getElementById('editChannelsBtn').addEventListener('click', function(e) {
-        e.stopPropagation();
-        window.openCardEditor('official-channels');
-    });
-    
-    document.getElementById('closeChannelsBtn').addEventListener('click', () => document.getElementById('channelsModal').style.display = 'none');
-
-    document.getElementById('addChannelBtn').addEventListener('click', async () => {
-        const name = document.getElementById('newChannelName').value.trim();
-        const url = document.getElementById('newChannelUrl').value.trim();
-        if (!name || !url) return alert('Заполните название и URL');
-        await fetch('/api/channels', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ name, url, icon: '🌐' }) });
-        document.getElementById('newChannelName').value = '';
-        document.getElementById('newChannelUrl').value = '';
-        loadChannelsForEdit();
-        loadChannels();
-    });
+    // Удаляем обработчик для editChannelsBtn, так как кнопка удалена из HTML
 
     document.getElementById('saveCardBtn').addEventListener('click', async () => {
         const id = document.getElementById('editCardId').value;
@@ -204,6 +189,7 @@
         document.getElementById('editCardModal').style.display = 'none';
         loadCards();
     });
+    
     document.getElementById('closeEditCardBtn').addEventListener('click', () => {
         document.getElementById('editCardModal').style.display = 'none';
         // Удаляем секцию каналов при закрытии
