@@ -29,9 +29,21 @@ function updateAdminUI() {
                 const editBtn = document.createElement('span');
                 editBtn.textContent = '✏️';
                 editBtn.className = 'edit-icon';
-                editBtn.style.cssText = 'font-size:0.9rem;margin-left:0.5rem;cursor:pointer;opacity:0.5;';
+                editBtn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:white;border:2px solid #e31e24;margin-left:0.5rem;cursor:pointer;opacity:0.7;transition:opacity 0.2s,transform 0.2s,box-shadow 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.1);font-size:0.9rem;vertical-align:middle;';
                 editBtn.title = 'Редактировать карточку';
                 title.appendChild(editBtn);
+                
+                editBtn.addEventListener('mouseenter', () => {
+                    editBtn.style.opacity = '1';
+                    editBtn.style.transform = 'scale(1.1)';
+                    editBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+                });
+                
+                editBtn.addEventListener('mouseleave', () => {
+                    editBtn.style.opacity = '0.7';
+                    editBtn.style.transform = 'scale(1)';
+                    editBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                });
                 
                 editBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -40,7 +52,14 @@ function updateAdminUI() {
                     document.getElementById('editCardId').value = cardId;
                     
                     // Получаем текст названия без карандаша
-                    const titleText = title.childNodes[0].textContent.trim();
+                    let titleText = '';
+                    for (const node of title.childNodes) {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            titleText += node.textContent;
+                        }
+                    }
+                    titleText = titleText.trim();
+                    
                     document.getElementById('editCardName').value = titleText;
                     document.getElementById('editCardDescription').value = cardEl.querySelector('.card-description').textContent;
                     document.getElementById('editCardModal').style.display = 'flex';
