@@ -121,11 +121,30 @@
         });
     }
 
+    // Функция для автоувеличения textarea
+    function autoResizeTextarea(textarea) {
+        if (!textarea) return;
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    // Настройка textarea для названия
+    const nameTextarea = document.getElementById('editCardName');
+    if (nameTextarea) {
+        nameTextarea.style.resize = 'none';
+        nameTextarea.style.overflow = 'hidden';
+        nameTextarea.addEventListener('input', function() {
+            autoResizeTextarea(this);
+        });
+    }
+
+    // Настройка textarea для описания
     const descTextarea = document.getElementById('editCardDescription');
     if (descTextarea) {
+        descTextarea.style.resize = 'none';
+        descTextarea.style.overflow = 'hidden';
         descTextarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = this.scrollHeight + 'px';
+            autoResizeTextarea(this);
         });
     }
 
@@ -147,8 +166,17 @@
             }
         }
         
-        document.getElementById('editCardName').value = titleText.trim();
-        document.getElementById('editCardDescription').value = description ? description.textContent : '';
+        const nameField = document.getElementById('editCardName');
+        const descField = document.getElementById('editCardDescription');
+        
+        nameField.value = titleText.trim();
+        descField.value = description ? description.textContent : '';
+        
+        // Автоувеличение после установки значений
+        setTimeout(() => {
+            autoResizeTextarea(nameField);
+            autoResizeTextarea(descField);
+        }, 50);
         
         // Показываем/скрываем секцию каналов
         const channelsSection = document.getElementById('channelsEditSection');
