@@ -14,6 +14,7 @@
     }
 
     function escapeHtml(text) {
+        if (!text) return '';
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
@@ -24,29 +25,44 @@
             const res = await fetch('/api/channels');
             const channels = await res.json();
             const grid = document.getElementById('channelsGrid');
+            if (!grid) return;
             if (channels.length === 0) { grid.innerHTML = '<span style="color:#94a3b8;">Нет каналов</span>'; return; }
             grid.innerHTML = channels.map(c => `
-                <a href="${c.url}" target="_blank" class="channel-icon" title="${c.name}">
-                    <img src="https://www.google.com/s2/favicons?domain=${c.url}&sz=32" alt="${c.name}" class="channel-logo">
-                    <span class="icon-label">${c.name}</span>
+                <a href="${escapeHtml(c.url)}" target="_blank" class="channel-icon" title="${escapeHtml(c.name)}">
+                    <img src="https://www.google.com/s2/favicons?domain=${c.url}&sz=32" alt="${escapeHtml(c.name)}" class="channel-logo">
+                    <span class="icon-label">${escapeHtml(c.name)}</span>
                 </a>
             `).join('');
-        } catch (err) { document.getElementById('channelsGrid').innerHTML = '<span style="color:#94a3b8;">Ошибка загрузки</span>'; }
+        } catch (err) { 
+            const grid = document.getElementById('channelsGrid');
+            if (grid) grid.innerHTML = '<span style="color:#94a3b8;">Ошибка загрузки</span>'; 
+        }
     }
 
     async function loadChannelsForEdit() {
-        const res = await fetch('/api/channels');
-        const channels = await res.json();
-        const list = document.getElementById('channelsEditList');
-        list.innerHTML = channels.map((c, i) => `
-            <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
-                <button onclick="moveChannel(${c.id}, ${i}, -1)" ${i === 0 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▲</button>
-                <button onclick="moveChannel(${c.id}, ${i}, 1)" ${i === channels.length - 1 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▼</button>
-                <input type="text" value="${escapeHtml(c.name)}" onchange="updateChannel(${c.id}, 'name', this.value)" style="flex:1;min-width:100px;padding:0.4rem;border:2px solid #e2e8f0;border-radius:6px;font-size:0.8rem;">
-                <input type="text" value="${escapeHtml(c.url)}" onchange="updateChannel(${c.id}, 'url', this.value)" style="flex:2;min-width:150px;padding:0.4rem;border:2px solid #e2e8f0;border-radius:6px;font-size:0.8rem;">
-                <button onclick="deleteChannel(${c.id})" style="background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;padding:0.3rem 0.5rem;font-size:0.7rem;">🗑️</button>
-            </div>
-        `).join('');
+        try {
+            const res = await fetch('/api/channels');
+            const channels = await res.json();
+            const list = document.getElementById('channelsEditList');
+            if (!list) return;
+            
+            if (channels.length === 0) {
+                list.innerHTML = '<span style="color:#94a3b8;">Нет каналов</span>';
+                return;
+            }
+            
+            list.innerHTML = channels.map((c, i) => `
+                <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
+                    <button onclick="moveChannel(${c.id}, ${i}, -1)" ${i === 0 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▲</button>
+                    <button onclick="moveChannel(${c.id}, ${i}, 1)" ${i === channels.length - 1 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▼</button>
+                    <input type="text" value="${escapeHtml(c.name)}" onchange="updateChannel(${c.id}, 'name', this.value)" style="flex:1;min-width:100px;padding:0.4rem;border:2px solid #e2e8f0;border-radius:6px;font-size:0.8rem;">
+                    <input type="text" value="${escapeHtml(c.url)}" onchange="updateChannel(${c.id}, 'url', this.value)" style="flex:2;min-width:150px;padding:0.4rem;border:2px solid #e2e8f0;border-radius:6px;font-size:0.8rem;">
+                    <button onclick="deleteChannel(${c.id})" style="background:#ef4444;color:white;border:none;border-radius:6px;cursor:pointer;padding:0.3rem 0.5rem;font-size:0.7rem;">🗑️</button>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error('Error loading channels:', err);
+        }
     }
 
     window.updateChannel = async function(id, field, value) {
@@ -83,8 +99,12 @@
             cards.forEach(card => {
                 const cardEl = document.querySelector(`[data-service="${card.id}"]`);
                 if (cardEl) {
-                    cardEl.querySelector('.card-title').childNodes[0].textContent = card.name;
-                    cardEl.querySelector('.card-description').textContent = card.description;
+                    const title = cardEl.querySelector('.card-title');
+                    if (title && title.childNodes[0]) {
+                        title.childNodes[0].textContent = card.name;
+                    }
+                    const desc = cardEl.querySelector('.card-description');
+                    if (desc) desc.textContent = card.description;
                     if (card.url) cardEl.setAttribute('data-url', card.url);
                 }
             });
@@ -117,15 +137,29 @@
         const description = card.querySelector('.card-description');
         
         document.getElementById('editCardId').value = cardId;
-        document.getElementById('editCardName').value = title.childNodes[0].textContent.trim();
+        
+        let titleText = '';
+        if (title) {
+            for (const node of title.childNodes) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    titleText += node.textContent;
+                }
+            }
+        }
+        
+        document.getElementById('editCardName').value = titleText.trim();
         document.getElementById('editCardDescription').value = description ? description.textContent : '';
         
-        document.getElementById('editCardModal').style.display = 'flex';
-        
+        // Показываем/скрываем секцию каналов
+        const channelsSection = document.getElementById('channelsEditSection');
         if (cardId === 'official-channels') {
-            document.getElementById('channelsModal').style.display = 'flex';
+            channelsSection.style.display = 'block';
             loadChannelsForEdit();
+        } else {
+            channelsSection.style.display = 'none';
         }
+        
+        document.getElementById('editCardModal').style.display = 'flex';
     };
 
     document.getElementById('saveCardBtn').addEventListener('click', async () => {
@@ -139,10 +173,6 @@
     
     document.getElementById('closeEditCardBtn').addEventListener('click', () => {
         document.getElementById('editCardModal').style.display = 'none';
-    });
-
-    document.getElementById('closeChannelsBtn').addEventListener('click', () => {
-        document.getElementById('channelsModal').style.display = 'none';
     });
 
     document.getElementById('addChannelBtn').addEventListener('click', async () => {
