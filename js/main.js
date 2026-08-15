@@ -100,44 +100,6 @@
         });
     }
 
-    function addEditIcons() {
-        document.querySelectorAll('.service-card').forEach(card => {
-            // Проверяем, нет ли уже карандаша
-            const title = card.querySelector('.card-title');
-            if (!title || title.querySelector('.edit-icon')) return;
-            
-            const editBtn = document.createElement('span');
-            editBtn.textContent = '✏️';
-            editBtn.className = 'edit-icon';
-            editBtn.style.cssText = 'font-size:0.9rem;margin-left:0.5rem;cursor:pointer;opacity:0.5;transition:opacity 0.2s;display:inline-block;vertical-align:middle;';
-            editBtn.title = 'Редактировать карточку';
-            
-            editBtn.addEventListener('mouseenter', () => editBtn.style.opacity = '1');
-            editBtn.addEventListener('mouseleave', () => editBtn.style.opacity = '0.5');
-            
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const cardId = card.getAttribute('data-service');
-                
-                document.getElementById('editCardId').value = cardId;
-                document.getElementById('editCardName').value = title.childNodes[0].textContent.trim();
-                document.getElementById('editCardDescription').value = card.querySelector('.card-description').textContent;
-                document.getElementById('editCardModal').style.display = 'flex';
-            });
-            
-            title.appendChild(editBtn);
-        });
-    }
-
-    if (localStorage.getItem('isAdmin') === 'true') {
-        // Показываем кнопку редактирования каналов
-        const editChannelsBtn = document.getElementById('editChannelsBtn');
-        if (editChannelsBtn) editChannelsBtn.style.display = 'inline-block';
-        
-        // Добавляем карандаши на карточки
-        addEditIcons();
-    }
-
     // Динамическое изменение высоты при ручном вводе текста в модальном окне
     const descTextarea = document.getElementById('editCardDescription');
     if (descTextarea) {
