@@ -22,41 +22,13 @@
             </div>
         </div>
 
-        <div class="services-grid">
-            <div class="service-card" data-service="merch" data-url="merch/index.html">
-                <div class="card-accent"></div>
-                <div class="card-content">
-                    <div class="card-title">Сувенирная продукция</div>
-                    <div class="card-description">Брендированная одежда, кружки, корпоративный мерч, канцелярия и аксессуары</div>
-                    <span class="card-link">В магазин мерча <span>→</span></span>
-                </div>
-            </div>
+        <div class="services-grid" id="servicesGrid">
+            <!-- Карточки загружаются из БД -->
+        </div>
 
-            <div class="service-card" data-service="official-channels">
-                <div class="card-accent"></div>
-                <div class="card-content">
-                    <div class="card-title">Официальные каналы связи</div>
-                    <div class="channels-grid" id="channelsGrid">Загрузка...</div>
-                </div>
-            </div>
-
-            <div class="service-card" data-service="it-services" data-url="services.html?id=it-services">
-                <div class="card-accent"></div>
-                <div class="card-content">
-                    <div class="card-title">IT-сервисы</div>
-                    <div class="card-description">Личный кабинет студента, Мероприятия, Расписание, Электронные услуги</div>
-                    <span class="card-link">Перейти в IT-портал <span>→</span></span>
-                </div>
-            </div>
-
-            <div class="service-card" data-service="bots" data-url="services.html?id=bots">
-                <div class="card-accent"></div>
-                <div class="card-content">
-                    <div class="card-title">Боты</div>
-                    <div class="card-description">Бот первокурсника, Единый деканат, Поддержка студентов, ВУЦ бот, Путеводитель по университету</div>
-                    <span class="card-link">Показать всех ботов <span>→</span></span>
-                </div>
-            </div>
+        <!-- Кнопка добавления карточки (видна только админу) -->
+        <div id="addCardBtn" style="display:none;text-align:center;padding:0 2rem 2rem;">
+            <button id="showAddCardModal" class="modal-btn primary" style="padding:0.8rem 2rem;font-size:1rem;border-radius:30px;">+ Добавить карточку</button>
         </div>
 
         <div class="footer-note">
@@ -70,8 +42,8 @@
         <div class="channels-modal-content">
             <h3>Редактировать карточку</h3>
             <input type="hidden" id="editCardId">
-            <textarea type="text" id="editCardName" placeholder="Название" class="channels-input" style="margin-top:0.5rem;"></textarea>
-            <textarea type="text" id="editCardDescription" placeholder="Описание" class="channels-input" style="margin-top:0.5rem;"></textarea>
+            <textarea id="editCardName" placeholder="Название" class="channels-input" style="margin-top:0.5rem;resize:none;overflow:hidden;"></textarea>
+            <textarea id="editCardDescription" placeholder="Описание" class="channels-input" style="margin-top:0.5rem;resize:none;overflow:hidden;"></textarea>
             
             <!-- Секция каналов (видна только для official-channels) -->
             <div id="channelsEditSection" style="display:none;margin-top:1rem;padding-top:1rem;border-top:2px solid #e2e8f0;">
@@ -89,6 +61,20 @@
             <div class="channels-buttons">
                 <button id="saveCardBtn" class="channels-btn primary">Сохранить</button>
                 <button id="closeEditCardBtn" class="channels-btn">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Добавление новой карточки -->
+    <div id="addCardModal" class="channels-modal">
+        <div class="channels-modal-content">
+            <h3>Добавить карточку</h3>
+            <input type="text" id="newCardName" placeholder="Название карточки" class="channels-input">
+            <textarea id="newCardDescription" placeholder="Описание" class="channels-input" style="resize:none;overflow:hidden;"></textarea>
+            <input type="text" id="newCardUrl" placeholder="URL (например: services.html?id=new-card)" class="channels-input">
+            <div class="channels-buttons">
+                <button id="createCardBtn" class="channels-btn primary">Создать</button>
+                <button id="closeAddCardBtn" class="channels-btn">Отмена</button>
             </div>
         </div>
     </div>
