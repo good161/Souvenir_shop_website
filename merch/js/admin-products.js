@@ -2,11 +2,14 @@ let isSaving = false;
 let currentImages = [];
 
 function getAuthHeaders() {
+    const token = localStorage.getItem('authToken'); 
+    
     return {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${token}`
     };
 }
+
 
 function showProductModal(product) {
     editingProductId = product ? product.id : null;
