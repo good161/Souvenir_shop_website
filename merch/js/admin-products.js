@@ -1,6 +1,7 @@
 let isSaving = false;
 let currentImages = [];
-export function getAuthHeaders() {
+
+function getAuthHeaders() {
     return {
         'Content-Type': 'application/json',
         //'Authorization': `Bearer ${localStorage.getItem('token')}` 
