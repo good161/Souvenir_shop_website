@@ -1,5 +1,11 @@
 let isSaving = false;
 let currentImages = [];
+export function getAuthHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        //'Authorization': `Bearer ${localStorage.getItem('token')}` 
+    };
+}
 
 function showProductModal(product) {
     editingProductId = product ? product.id : null;
