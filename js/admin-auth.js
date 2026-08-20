@@ -11,6 +11,37 @@ if (localStorage.getItem('isAdmin') === 'true') {
     isAdmin = true;
 }
 
+// ===== ПРОВЕРКА СРОКА ДЕЙСТВИЯ ТОКЕНА =====
+function isTokenExpired(token) {
+    if (!token) return true;
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const exp = payload.exp * 1000;
+        return Date.now() >= exp;
+    } catch (e) {
+        return true;
+    }
+}
+
+// ===== ОЧИСТКА СЕССИИ =====
+function clearAdminSession() {
+    authToken = '';
+    isAdmin = false;
+    adminRole = '';
+    showArchived = false;
+    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('adminRole');
+    
+    const adminBtn = document.getElementById('adminBtn');
+    if (adminBtn) adminBtn.classList.remove('active');
+    
+    const showAdminsBtn = document.getElementById('showAdminsBtn');
+    if (showAdminsBtn) showAdminsBtn.style.display = 'none';
+    
+    updateAdminUI();
+}
+
 // ===== ФУНКЦИЯ ОБНОВЛЕНИЯ UI =====
 function updateAdminUI() {
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
@@ -68,6 +99,14 @@ function hideLoginModal() {
 }
 
 function getAuthHeaders() {
+    // Проверяем, не протух ли токен
+    const token = localStorage.getItem('authToken');
+    if (isTokenExpired(token)) {
+        clearAdminSession();
+        return {
+            'Content-Type': 'application/json'
+        };
+    }
     return {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${authToken}`
@@ -77,7 +116,9 @@ function getAuthHeaders() {
 function restoreSession() {
     const savedToken = localStorage.getItem('authToken');
     const savedRole = localStorage.getItem('adminRole');
-    if (savedToken && savedRole) {
+    
+    // Проверяем, не протух ли токен
+    if (savedToken && savedRole && !isTokenExpired(savedToken)) {
         authToken = savedToken;
         isAdmin = true;
         adminRole = savedRole;
@@ -85,6 +126,10 @@ function restoreSession() {
         document.getElementById('showAdminsBtn').style.display = 'block';
         updateAdminUI();
         return true;
+    } else if (savedToken && isTokenExpired(savedToken)) {
+        // Токен протух — очищаем сессию
+        clearAdminSession();
+        return false;
     }
     return false;
 }
@@ -133,16 +178,7 @@ function initAdminAuth() {
 
 document.getElementById('adminBtn').addEventListener('click', () => {
     if (isAdmin) {
-        document.getElementById('adminBtn').classList.remove('active');
-        isAdmin = false;
-        adminRole = '';
-        showArchived = false;
-        authToken = '';
-        localStorage.removeItem('isAdmin');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('adminRole');
-        document.getElementById('showAdminsBtn').style.display = 'none';
-        updateAdminUI();
+        clearAdminSession();
         if (typeof renderProducts === 'function') renderProducts(products);
     } else {
         showLoginModal();
