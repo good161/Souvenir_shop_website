@@ -1,3 +1,4 @@
+const express = require('express');.txt
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -19,7 +20,7 @@ app.use(express.static(path.join(__dirname)));
 const JWT_SECRET = process.env.JWT_SECRET || 'chsu-merch-jwt-secret-2026';
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://postgres.atzspalpmoijomeccjzw:P0OqcN0gyc8mBz6@aws-0-us-east-1.pooler.supabase.com:6543/postgres',
+    connectionString: process.env.DATABASE_URL || 'postgresql://postgres.atzspalpmoijomeccjzw:P0OqqcN0gyc8mBz6@aws-0-us-east-1.pooler.supabase.com:6543/postgres',
     ssl: { rejectUnauthorized: false }
 });
 
