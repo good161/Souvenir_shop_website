@@ -24,6 +24,12 @@
     async function loadChannels() {
         try {
             const res = await fetch('/api/channels');
+            if (!res.ok) {
+                console.error('Channels API error:', res.status);
+                const grid = document.getElementById('channelsGrid');
+                if (grid) grid.innerHTML = '<span style="color:#94a3b8;">Каналы временно недоступны</span>';
+                return;
+            }
             const channels = await res.json();
             const grid = document.getElementById('channelsGrid');
             if (!grid) return;
@@ -35,6 +41,7 @@
                 </a>
             `).join('');
         } catch (err) { 
+            console.error('Channels load error:', err);
             const grid = document.getElementById('channelsGrid');
             if (grid) grid.innerHTML = '<span style="color:#94a3b8;">Ошибка загрузки</span>'; 
         }
@@ -43,6 +50,7 @@
     async function loadChannelsForEdit() {
         try {
             const res = await fetch('/api/channels');
+            if (!res.ok) return;
             const channels = await res.json();
             const list = document.getElementById('channelsEditList');
             if (!list) return;
@@ -94,12 +102,31 @@
     };
 
     async function loadCards() {
+        const grid = document.getElementById('servicesGrid');
+        if (!grid) return;
+        
         try {
             const res = await fetch('/api/cards');
-            if (!res.ok) throw new Error('Failed to load cards');
+            console.log('Cards response status:', res.status);
+            
+            if (!res.ok) {
+                let errorText = '';
+                try { errorText = await res.text(); } catch(e) {}
+                console.error('Cards API error:', res.status, errorText);
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:2rem;background:#fef2f2;border-radius:1rem;border:2px dashed #ef4444;">
+                        <p style="color:#ef4444;font-weight:600;margin-bottom:0.5rem;">Не удалось загрузить данные</p>
+                        <p style="color:#64748b;font-size:0.85rem;">Сервер вернул ошибку ${res.status}. Попробуйте позже.</p>
+                    </div>`;
+                return;
+            }
+            
             const cards = await res.json();
-            const grid = document.getElementById('servicesGrid');
-            if (!grid) return;
+            if (!Array.isArray(cards)) {
+                console.error('Cards is not array:', cards);
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:#94a3b8;">Некорректный формат данных</div>';
+                return;
+            }
             
             grid.innerHTML = cards.map(card => {
                 if (card.id === 'official-channels') {
@@ -137,6 +164,11 @@
             }
         } catch (err) {
             console.error('Error loading cards:', err);
+            grid.innerHTML = `
+                <div style="grid-column:1/-1;text-align:center;padding:2rem;background:#fef2f2;border-radius:1rem;border:2px dashed #ef4444;">
+                    <p style="color:#ef4444;font-weight:600;margin-bottom:0.5rem;">Ошибка соединения</p>
+                    <p style="color:#64748b;font-size:0.85rem;">${escapeHtml(err.message)}</p>
+                </div>`;
         }
     }
 
