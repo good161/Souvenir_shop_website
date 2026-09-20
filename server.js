@@ -47,11 +47,22 @@ if (!JWT_SECRET) {
 }
 
 // Поддержка обоих имён переменных
-const DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+let DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 if (!DATABASE_URL) {
     console.error('КРИТИЧЕСКАЯ ОШИБКА: DATABASE_URL (или POSTGRES_URL) не задан!');
     process.exit(1);
 }
+
+// Убираем sslmode из строки — это решает проблему "self-signed certificate"
+DATABASE_URL = DATABASE_URL
+    .replace('?sslmode=require', '')
+    .replace('&sslmode=require', '')
+    .replace('?sslmode=prefer', '')
+    .replace('&sslmode=prefer', '')
+    .replace('?sslmode=verify-full', '')
+    .replace('&sslmode=verify-full', '')
+    .replace('?sslmode=verify-ca', '')
+    .replace('&sslmode=verify-ca', '');
 
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
@@ -182,6 +193,7 @@ app.get('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req,
         const result = await pool.query('SELECT id, username, role FROM admins ORDER BY id');
         res.json(result.rows);
     } catch (err) {
+        console.error('Admins error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -207,6 +219,7 @@ app.post('/api/admins', authenticateToken, requireRole('Protoadmin'), writeLimit
         if (err.code === '23505') {
             return res.status(400).json({ error: 'Такой логин уже существует' });
         }
+        console.error('Add admin error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -219,6 +232,7 @@ app.delete('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), writ
         await pool.query('DELETE FROM admins WHERE id = $1', [id]);
         res.json({ success: true });
     } catch (err) {
+        console.error('Delete admin error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -233,6 +247,7 @@ app.post('/api/change-password', authenticateToken, writeLimiter, async (req, re
         await pool.query('UPDATE admins SET password_hash = $1 WHERE id = $2', [hashedPassword, req.user.id]);
         res.json({ success: true });
     } catch (err) {
+        console.error('Change password error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -283,6 +298,7 @@ app.delete('/api/products/:id', authenticateToken, writeLimiter, async (req, res
         await pool.query('DELETE FROM products WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
+        console.error('Delete product error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -294,6 +310,7 @@ app.patch('/api/products/:id', authenticateToken, writeLimiter, async (req, res)
         await pool.query('UPDATE products SET archived = $1, in_stock = $2 WHERE id = $3', [archived === true, inStock !== false, req.params.id]);
         res.json({ success: true });
     } catch (err) {
+        console.error('Patch product error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -330,6 +347,7 @@ app.post('/api/delete-image', authenticateToken, writeLimiter, async (req, res) 
         });
         res.json({ success: true });
     } catch (err) {
+        console.error('Delete image error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера при удалении медиафайла' });
     }
 });
@@ -354,6 +372,7 @@ app.post('/api/channels', authenticateToken, writeLimiter, async (req, res) => {
         await pool.query('INSERT INTO channels (name, url, icon) VALUES ($1,$2,$3)', [name, url, icon || '🌐']);
         res.json({ success: true });
     } catch (err) {
+        console.error('Add channel error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -377,6 +396,7 @@ app.patch('/api/channels/:id', authenticateToken, writeLimiter, async (req, res)
         }
         res.json({ success: true });
     } catch (err) {
+        console.error('Patch channel error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -388,6 +408,7 @@ app.delete('/api/channels/:id', authenticateToken, writeLimiter, async (req, res
         await pool.query('DELETE FROM channels WHERE id = $1', [id]);
         res.json({ success: true });
     } catch (err) {
+        console.error('Delete channel error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -415,6 +436,7 @@ app.post('/api/cards', authenticateToken, writeLimiter, async (req, res) => {
         );
         res.json({ success: true });
     } catch (err) {
+        console.error('Add card error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -437,6 +459,7 @@ app.patch('/api/cards/:id', authenticateToken, writeLimiter, async (req, res) =>
         }
         res.json({ success: true });
     } catch (err) {
+        console.error('Patch card error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -450,6 +473,7 @@ app.delete('/api/cards/:id', authenticateToken, writeLimiter, async (req, res) =
         await pool.query('DELETE FROM cards WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
+        console.error('Delete card error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -476,6 +500,7 @@ app.post('/api/card-links', authenticateToken, writeLimiter, async (req, res) =>
         await pool.query('INSERT INTO card_links (card_id, name, url, description) VALUES ($1,$2,$3,$4)', [card_id, name, url, description || '']);
         res.json({ success: true });
     } catch (err) {
+        console.error('Add card link error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -503,6 +528,7 @@ app.patch('/api/card-links/:id', authenticateToken, writeLimiter, async (req, re
         }
         res.json({ success: true });
     } catch (err) {
+        console.error('Patch card link error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -514,6 +540,7 @@ app.delete('/api/card-links/:id', authenticateToken, writeLimiter, async (req, r
         await pool.query('DELETE FROM card_links WHERE id = $1', [id]);
         res.json({ success: true });
     } catch (err) {
+        console.error('Delete card link error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
