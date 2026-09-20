@@ -46,9 +46,10 @@ if (!JWT_SECRET) {
     process.exit(1);
 }
 
-const DATABASE_URL = process.env.DATABASE_URL;
+// Поддержка обоих имён переменных
+const DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 if (!DATABASE_URL) {
-    console.error('КРИТИЧЕСКАЯ ОШИБКА: DATABASE_URL не задан!');
+    console.error('КРИТИЧЕСКАЯ ОШИБКА: DATABASE_URL (или POSTGRES_URL) не задан!');
     process.exit(1);
 }
 
@@ -169,6 +170,7 @@ app.post('/api/login', async (req, res) => {
         const token = generateToken(user);
         res.json({ success: true, token, role: user.role });
     } catch (err) {
+        console.error('Login error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -247,6 +249,7 @@ app.get('/api/products', async (req, res) => {
             variants: p.variants, archived: p.archived
         })));
     } catch (err) {
+        console.error('Products error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -269,6 +272,7 @@ app.post('/api/products', authenticateToken, writeLimiter, async (req, res) => {
         );
         res.json({ success: true });
     } catch (err) {
+        console.error('Save product error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -337,6 +341,7 @@ app.get('/api/channels', async (req, res) => {
         const result = await pool.query('SELECT * FROM channels ORDER BY display_order, id');
         res.json(result.rows);
     } catch (err) {
+        console.error('Channels error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -394,6 +399,7 @@ app.get('/api/cards', async (req, res) => {
         const result = await pool.query('SELECT * FROM cards ORDER BY display_order, id');
         res.json(result.rows);
     } catch (err) {
+        console.error('Cards error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -456,6 +462,7 @@ app.get('/api/card-links/:cardId', async (req, res) => {
         const result = await pool.query('SELECT * FROM card_links WHERE card_id = $1 ORDER BY display_order, id', [req.params.cardId]);
         res.json(result.rows);
     } catch (err) {
+        console.error('CardLinks error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
