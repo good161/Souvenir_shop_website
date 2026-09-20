@@ -1,7 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const path = require('path');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
@@ -10,122 +8,20 @@ const { Pool } = require('pg');
 
 const app = express();
 
-// ==================== БЕЗОПАСНОСТЬ ====================
-
-app.use(helmet({
-    contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false
-}));
-
 app.use(cors({
     origin: ['https://souvenir-shop-website.vercel.app', 'http://localhost:3000'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-    maxAge: 86400
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-app.use(express.json({ limit: '10mb' }));
-
-// Блокировка доступа к служебным файлам
-app.use((req, res, next) => {
-    const blocked = ['/server.js', '/package.json', '/vercel.json', '/.env', '/.git'];
-    if (blocked.some(p => req.path.startsWith(p))) {
-        return res.status(404).send('Not found');
-    }
-    next();
-});
-
+app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// ==================== ПРОВЕРКА СЕКРЕТОВ ====================
-
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-    console.error('КРИТИЧЕСКАЯ ОШИБКА: JWT_SECRET не задан!');
-    process.exit(1);
-}
-
-// Поддержка обоих имён переменных
-let DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
-if (!DATABASE_URL) {
-    console.error('КРИТИЧЕСКАЯ ОШИБКА: DATABASE_URL (или POSTGRES_URL) не задан!');
-    process.exit(1);
-}
-
-// Убираем sslmode из строки — это решает проблему "self-signed certificate"
-DATABASE_URL = DATABASE_URL
-    .replace('?sslmode=require', '')
-    .replace('&sslmode=require', '')
-    .replace('?sslmode=prefer', '')
-    .replace('&sslmode=prefer', '')
-    .replace('?sslmode=verify-full', '')
-    .replace('&sslmode=verify-full', '')
-    .replace('?sslmode=verify-ca', '')
-    .replace('&sslmode=verify-ca', '');
-
-const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
-const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
-
-if (!CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET || !CLOUDINARY_CLOUD_NAME) {
-    console.error('КРИТИЧЕСКАЯ ОШИБКА: Cloudinary ключи не заданы!');
-    process.exit(1);
-}
-
-// ==================== ПОДКЛЮЧЕНИЕ К БД ====================
+const JWT_SECRET = process.env.JWT_SECRET || 'chsu-merch-jwt-secret-2026';
 
 const pool = new Pool({
-    connectionString: DATABASE_URL,
+    connectionString: process.env.DATABASE_URL || 'postgresql://postgres.atzspalpmoijomeccjzw:P0OqcN0gyc8mBz6@aws-0-us-east-1.pooler.supabase.com:6543/postgres',
     ssl: { rejectUnauthorized: false }
 });
-
-// ==================== RATE LIMITING ====================
-
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 5,
-    message: { error: 'Слишком много попыток входа. Попробуйте через 15 минут' },
-    standardHeaders: true,
-    legacyHeaders: false
-});
-
-const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 200,
-    message: { error: 'Слишком много запросов. Попробуйте позже' },
-    standardHeaders: true,
-    legacyHeaders: false
-});
-
-const writeLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 50,
-    message: { error: 'Слишком много изменений. Попробуйте позже' },
-    standardHeaders: true,
-    legacyHeaders: false
-});
-
-app.use('/api/login', loginLimiter);
-app.use('/api', apiLimiter);
-
-// ==================== ВАЛИДАЦИЯ ====================
-
-function isString(val, min = 0, max = 1000) {
-    return typeof val === 'string' && val.length >= min && val.length <= max;
-}
-
-function isInt(val, min = 0, max = Number.MAX_SAFE_INTEGER) {
-    return Number.isInteger(val) && val >= min && val <= max;
-}
-
-function isValidId(val) {
-    if (typeof val === 'number') return val > 0;
-    if (typeof val === 'string') return val.length > 0 && val.length <= 100;
-    return false;
-}
-
-// ==================== АВТОРИЗАЦИЯ ====================
 
 function generateToken(user) {
     return jwt.sign(
@@ -137,18 +33,10 @@ function generateToken(user) {
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Доступ запрещён' });
-    }
-    const token = authHeader.split(' ')[1];
+    const token = authHeader && authHeader.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Доступ запрещён' });
     jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }, (err, user) => {
-        if (err) {
-            if (err.name === 'TokenExpiredError') {
-                return res.status(403).json({ error: 'Токен истёк. Войдите заново' });
-            }
-            return res.status(403).json({ error: 'Неверный токен' });
-        }
+        if (err) return res.status(403).json({ error: 'Неверный или просроченный токен' });
         req.user = user;
         next();
     });
@@ -167,11 +55,7 @@ function requireRole(role) {
 
 app.post('/api/login', async (req, res) => {
     const { login, password } = req.body;
-    
-    if (!isString(login, 1, 100) || !isString(password, 1, 100)) {
-        return res.status(400).json({ error: 'Некорректные данные' });
-    }
-    
+    if (!login || !password) return res.status(400).json({ error: 'Логин и пароль обязательны' });
     try {
         const result = await pool.query('SELECT * FROM admins WHERE username = $1', [login]);
         if (result.rows.length === 0) return res.status(401).json({ error: 'Неверный логин или пароль' });
@@ -181,7 +65,6 @@ app.post('/api/login', async (req, res) => {
         const token = generateToken(user);
         res.json({ success: true, token, role: user.role });
     } catch (err) {
-        console.error('Login error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -193,61 +76,39 @@ app.get('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req,
         const result = await pool.query('SELECT id, username, role FROM admins ORDER BY id');
         res.json(result.rows);
     } catch (err) {
-        console.error('Admins error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.post('/api/admins', authenticateToken, requireRole('Protoadmin'), writeLimiter, async (req, res) => {
+app.post('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
     const { username, password, role } = req.body;
-    
-    if (!isString(username, 3, 50)) {
-        return res.status(400).json({ error: 'Логин должен быть от 3 до 50 символов' });
-    }
-    if (!isString(password, 6, 100)) {
-        return res.status(400).json({ error: 'Пароль должен быть минимум 6 символов' });
-    }
-    if (!['Protoadmin', 'manager'].includes(role)) {
-        return res.status(400).json({ error: 'Некорректная роль' });
-    }
-    
+    if (!username || !password || !role) return res.status(400).json({ error: 'Все поля обязательны' });
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         await pool.query('INSERT INTO admins (username, password_hash, role) VALUES ($1,$2,$3)', [username, hashedPassword, role]);
         res.json({ success: true });
     } catch (err) {
-        if (err.code === '23505') {
-            return res.status(400).json({ error: 'Такой логин уже существует' });
-        }
-        console.error('Add admin error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.delete('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), writeLimiter, async (req, res) => {
-    const id = parseInt(req.params.id);
-    if (isNaN(id) || id <= 0) return res.status(400).json({ error: 'Некорректный ID' });
-    
+app.delete('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
     try {
-        await pool.query('DELETE FROM admins WHERE id = $1', [id]);
+        await pool.query('DELETE FROM admins WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
-        console.error('Delete admin error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.post('/api/change-password', authenticateToken, writeLimiter, async (req, res) => {
+app.post('/api/change-password', authenticateToken, async (req, res) => {
     const { password } = req.body;
-    if (!isString(password, 6, 100)) {
-        return res.status(400).json({ error: 'Пароль должен быть минимум 6 символов' });
-    }
+    if (!password) return res.status(400).json({ error: 'Пароль обязателен' });
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         await pool.query('UPDATE admins SET password_hash = $1 WHERE id = $2', [hashedPassword, req.user.id]);
         res.json({ success: true });
     } catch (err) {
-        console.error('Change password error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -264,64 +125,49 @@ app.get('/api/products', async (req, res) => {
             variants: p.variants, archived: p.archived
         })));
     } catch (err) {
-        console.error('Products error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.post('/api/products', authenticateToken, writeLimiter, async (req, res) => {
+app.post('/api/products', authenticateToken, async (req, res) => {
     try {
         const { id, name, category, image, images, price, description, inStock, variants } = req.body;
-        
-        if (!isValidId(id)) return res.status(400).json({ error: 'Некорректный ID' });
-        if (!isString(name, 2, 200)) return res.status(400).json({ error: 'Некорректное название' });
-        if (price !== null && price !== undefined && (typeof price !== 'number' || price < 0)) {
-            return res.status(400).json({ error: 'Некорректная цена' });
-        }
-        
         await pool.query(
             `INSERT INTO products (id, name, category, image, images, price, description, in_stock, variants)
              VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
              ON CONFLICT (id) DO UPDATE SET name=$2, category=$3, image=$4, images=$5, price=$6, description=$7, in_stock=$8, variants=$9`,
-            [String(id), name, category || 'Без категории', image || '', images ? JSON.stringify(images) : '[]', price, description || '', inStock !== false, variants ? JSON.stringify(variants) : null]
+            [String(id), name, category, image, images ? JSON.stringify(images) : '[]', price, description, inStock, variants ? JSON.stringify(variants) : null]
         );
         res.json({ success: true });
     } catch (err) {
-        console.error('Save product error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.delete('/api/products/:id', authenticateToken, writeLimiter, async (req, res) => {
-    if (!req.params.id || req.params.id.length > 100) return res.status(400).json({ error: 'Некорректный ID' });
+app.delete('/api/products/:id', authenticateToken, async (req, res) => {
     try {
         await pool.query('DELETE FROM products WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
-        console.error('Delete product error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.patch('/api/products/:id', authenticateToken, writeLimiter, async (req, res) => {
-    if (!req.params.id || req.params.id.length > 100) return res.status(400).json({ error: 'Некорректный ID' });
+app.patch('/api/products/:id', authenticateToken, async (req, res) => {
     try {
         const { archived, inStock } = req.body;
-        await pool.query('UPDATE products SET archived = $1, in_stock = $2 WHERE id = $3', [archived === true, inStock !== false, req.params.id]);
+        await pool.query('UPDATE products SET archived = $1, in_stock = $2 WHERE id = $3', [archived, inStock, req.params.id]);
         res.json({ success: true });
     } catch (err) {
-        console.error('Patch product error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
 // ==================== ИЗОБРАЖЕНИЯ (CLOUDINARY) ====================
 
-app.post('/api/delete-image', authenticateToken, writeLimiter, async (req, res) => {
+app.post('/api/delete-image', authenticateToken, async (req, res) => {
     const { imageUrl } = req.body;
-    if (!isString(imageUrl, 1, 500)) return res.status(400).json({ error: 'Некорректный URL' });
-    if (imageUrl.includes('placehold.co')) return res.json({ success: true });
-    
+    if (!imageUrl || imageUrl.includes('placehold.co')) return res.json({ success: true });
     try {
         const parts = imageUrl.split('/');
         const uploadIndex = parts.indexOf('upload');
@@ -331,23 +177,23 @@ app.post('/api/delete-image', authenticateToken, writeLimiter, async (req, res) 
         if (!publicId) return res.status(400).json({ error: 'Не удалось определить public_id' });
         
         const timestamp = Math.floor(Date.now() / 1000);
-        const stringToSign = `public_id=${publicId}&timestamp=${timestamp}${CLOUDINARY_API_SECRET}`;
+        const apiSecret = process.env.CLOUDINARY_API_SECRET || 'wXSugPZb_b08BH2rGqq_KoOPA1g';
+        const stringToSign = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
         const signature = crypto.createHash('sha1').update(stringToSign).digest('hex');
         
         const formData = new URLSearchParams();
         formData.append('public_id', publicId);
-        formData.append('api_key', CLOUDINARY_API_KEY);
+        formData.append('api_key', process.env.CLOUDINARY_API_KEY || '377457394998153');
         formData.append('timestamp', timestamp);
         formData.append('signature', signature);
         
-        await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/destroy`, {
+        await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME || 'sd0mazc2'}/image/destroy`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: formData.toString()
         });
         res.json({ success: true });
     } catch (err) {
-        console.error('Delete image error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера при удалении медиафайла' });
     }
 });
@@ -359,56 +205,38 @@ app.get('/api/channels', async (req, res) => {
         const result = await pool.query('SELECT * FROM channels ORDER BY display_order, id');
         res.json(result.rows);
     } catch (err) {
-        console.error('Channels error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.post('/api/channels', authenticateToken, writeLimiter, async (req, res) => {
+app.post('/api/channels', authenticateToken, async (req, res) => {
     const { name, url, icon } = req.body;
-    if (!isString(name, 1, 100)) return res.status(400).json({ error: 'Некорректное название' });
-    if (!isString(url, 1, 500)) return res.status(400).json({ error: 'Некорректный URL' });
+    if (!name || !url) return res.status(400).json({ error: 'Название и URL обязательны' });
     try {
         await pool.query('INSERT INTO channels (name, url, icon) VALUES ($1,$2,$3)', [name, url, icon || '🌐']);
         res.json({ success: true });
     } catch (err) {
-        console.error('Add channel error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.patch('/api/channels/:id', authenticateToken, writeLimiter, async (req, res) => {
-    const id = parseInt(req.params.id);
-    if (isNaN(id) || id <= 0) return res.status(400).json({ error: 'Некорректный ID' });
+app.patch('/api/channels/:id', authenticateToken, async (req, res) => {
     const { name, url, display_order } = req.body;
     try {
-        if (name !== undefined) {
-            if (!isString(name, 1, 100)) return res.status(400).json({ error: 'Некорректное название' });
-            await pool.query('UPDATE channels SET name = $1 WHERE id = $2', [name, id]);
-        }
-        if (url !== undefined) {
-            if (!isString(url, 1, 500)) return res.status(400).json({ error: 'Некорректный URL' });
-            await pool.query('UPDATE channels SET url = $1 WHERE id = $2', [url, id]);
-        }
-        if (display_order !== undefined) {
-            if (!isInt(display_order, 0, 9999)) return res.status(400).json({ error: 'Некорректный порядок' });
-            await pool.query('UPDATE channels SET display_order = $1 WHERE id = $2', [display_order, id]);
-        }
+        if (name) await pool.query('UPDATE channels SET name = $1 WHERE id = $2', [name, req.params.id]);
+        if (url) await pool.query('UPDATE channels SET url = $1 WHERE id = $2', [url, req.params.id]);
+        if (display_order !== undefined) await pool.query('UPDATE channels SET display_order = $1 WHERE id = $2', [display_order, req.params.id]);
         res.json({ success: true });
     } catch (err) {
-        console.error('Patch channel error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.delete('/api/channels/:id', authenticateToken, writeLimiter, async (req, res) => {
-    const id = parseInt(req.params.id);
-    if (isNaN(id) || id <= 0) return res.status(400).json({ error: 'Некорректный ID' });
+app.delete('/api/channels/:id', authenticateToken, async (req, res) => {
     try {
-        await pool.query('DELETE FROM channels WHERE id = $1', [id]);
+        await pool.query('DELETE FROM channels WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
-        console.error('Delete channel error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -420,15 +248,13 @@ app.get('/api/cards', async (req, res) => {
         const result = await pool.query('SELECT * FROM cards ORDER BY display_order, id');
         res.json(result.rows);
     } catch (err) {
-        console.error('Cards error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.post('/api/cards', authenticateToken, writeLimiter, async (req, res) => {
+app.post('/api/cards', authenticateToken, async (req, res) => {
     const { id, name, description, url, display_order } = req.body;
-    if (!isValidId(id)) return res.status(400).json({ error: 'Некорректный ID' });
-    if (!isString(name, 1, 200)) return res.status(400).json({ error: 'Некорректное название' });
+    if (!id || !name) return res.status(400).json({ error: 'ID и название обязательны' });
     try {
         await pool.query(
             'INSERT INTO cards (id, name, description, url, display_order) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO UPDATE SET name = $2, description = $3, url = $4, display_order = $5',
@@ -436,35 +262,23 @@ app.post('/api/cards', authenticateToken, writeLimiter, async (req, res) => {
         );
         res.json({ success: true });
     } catch (err) {
-        console.error('Add card error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.patch('/api/cards/:id', authenticateToken, writeLimiter, async (req, res) => {
-    if (!req.params.id || req.params.id.length > 100) return res.status(400).json({ error: 'Некорректный ID' });
+app.patch('/api/cards/:id', authenticateToken, async (req, res) => {
     const { name, description, url } = req.body;
     try {
-        if (name !== undefined) {
-            if (!isString(name, 1, 200)) return res.status(400).json({ error: 'Некорректное название' });
-            await pool.query('UPDATE cards SET name = $1 WHERE id = $2', [name, req.params.id]);
-        }
-        if (description !== undefined) {
-            if (!isString(description, 0, 1000)) return res.status(400).json({ error: 'Некорректное описание' });
-            await pool.query('UPDATE cards SET description = $1 WHERE id = $2', [description, req.params.id]);
-        }
-        if (url !== undefined) {
-            if (!isString(url, 0, 500)) return res.status(400).json({ error: 'Некорректный URL' });
-            await pool.query('UPDATE cards SET url = $1 WHERE id = $2', [url, req.params.id]);
-        }
+        if (name) await pool.query('UPDATE cards SET name = $1 WHERE id = $2', [name, req.params.id]);
+        if (description !== undefined) await pool.query('UPDATE cards SET description = $1 WHERE id = $2', [description, req.params.id]);
+        if (url !== undefined) await pool.query('UPDATE cards SET url = $1 WHERE id = $2', [url, req.params.id]);
         res.json({ success: true });
     } catch (err) {
-        console.error('Patch card error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.delete('/api/cards/:id', authenticateToken, writeLimiter, async (req, res) => {
+app.delete('/api/cards/:id', authenticateToken, async (req, res) => {
     const protectedCards = ['merch', 'official-channels', 'it-services', 'bots'];
     if (protectedCards.includes(req.params.id)) {
         return res.status(403).json({ error: 'Эту карточку удалить нельзя' });
@@ -473,7 +287,6 @@ app.delete('/api/cards/:id', authenticateToken, writeLimiter, async (req, res) =
         await pool.query('DELETE FROM cards WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
-        console.error('Delete card error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
@@ -481,66 +294,43 @@ app.delete('/api/cards/:id', authenticateToken, writeLimiter, async (req, res) =
 // ==================== ССЫЛКИ КАРТОЧЕК ====================
 
 app.get('/api/card-links/:cardId', async (req, res) => {
-    if (!req.params.cardId || req.params.cardId.length > 100) return res.status(400).json({ error: 'Некорректный cardId' });
     try {
         const result = await pool.query('SELECT * FROM card_links WHERE card_id = $1 ORDER BY display_order, id', [req.params.cardId]);
         res.json(result.rows);
     } catch (err) {
-        console.error('CardLinks error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.post('/api/card-links', authenticateToken, writeLimiter, async (req, res) => {
+app.post('/api/card-links', authenticateToken, async (req, res) => {
     const { card_id, name, url, description } = req.body;
-    if (!isValidId(card_id)) return res.status(400).json({ error: 'Некорректный card_id' });
-    if (!isString(name, 1, 200)) return res.status(400).json({ error: 'Некорректное название' });
-    if (!isString(url, 1, 500)) return res.status(400).json({ error: 'Некорректный URL' });
+    if (!card_id || !name || !url) return res.status(400).json({ error: 'Все поля обязательны' });
     try {
         await pool.query('INSERT INTO card_links (card_id, name, url, description) VALUES ($1,$2,$3,$4)', [card_id, name, url, description || '']);
         res.json({ success: true });
     } catch (err) {
-        console.error('Add card link error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.patch('/api/card-links/:id', authenticateToken, writeLimiter, async (req, res) => {
-    const id = parseInt(req.params.id);
-    if (isNaN(id) || id <= 0) return res.status(400).json({ error: 'Некорректный ID' });
+app.patch('/api/card-links/:id', authenticateToken, async (req, res) => {
     const { name, url, description, display_order } = req.body;
     try {
-        if (name !== undefined) {
-            if (!isString(name, 1, 200)) return res.status(400).json({ error: 'Некорректное название' });
-            await pool.query('UPDATE card_links SET name = $1 WHERE id = $2', [name, id]);
-        }
-        if (url !== undefined) {
-            if (!isString(url, 1, 500)) return res.status(400).json({ error: 'Некорректный URL' });
-            await pool.query('UPDATE card_links SET url = $1 WHERE id = $2', [url, id]);
-        }
-        if (description !== undefined) {
-            if (!isString(description, 0, 1000)) return res.status(400).json({ error: 'Некорректное описание' });
-            await pool.query('UPDATE card_links SET description = $1 WHERE id = $2', [description, id]);
-        }
-        if (display_order !== undefined) {
-            if (!isInt(display_order, 0, 9999)) return res.status(400).json({ error: 'Некорректный порядок' });
-            await pool.query('UPDATE card_links SET display_order = $1 WHERE id = $2', [display_order, id]);
-        }
+        if (name) await pool.query('UPDATE card_links SET name = $1 WHERE id = $2', [name, req.params.id]);
+        if (url) await pool.query('UPDATE card_links SET url = $1 WHERE id = $2', [url, req.params.id]);
+        if (description !== undefined) await pool.query('UPDATE card_links SET description = $1 WHERE id = $2', [description, req.params.id]);
+        if (display_order !== undefined) await pool.query('UPDATE card_links SET display_order = $1 WHERE id = $2', [display_order, req.params.id]);
         res.json({ success: true });
     } catch (err) {
-        console.error('Patch card link error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.delete('/api/card-links/:id', authenticateToken, writeLimiter, async (req, res) => {
-    const id = parseInt(req.params.id);
-    if (isNaN(id) || id <= 0) return res.status(400).json({ error: 'Некорректный ID' });
+app.delete('/api/card-links/:id', authenticateToken, async (req, res) => {
     try {
-        await pool.query('DELETE FROM card_links WHERE id = $1', [id]);
+        await pool.query('DELETE FROM card_links WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (err) {
-        console.error('Delete card link error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
