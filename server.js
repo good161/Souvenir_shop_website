@@ -51,8 +51,6 @@ function requireRole(role) {
     };
 }
 
-// ==================== АВТОРИЗАЦИЯ ====================
-
 app.post('/api/login', async (req, res) => {
     const { login, password } = req.body;
     if (!login || !password) return res.status(400).json({ error: 'Логин и пароль обязательны' });
@@ -68,8 +66,6 @@ app.post('/api/login', async (req, res) => {
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
-
-// ==================== АДМИНИСТРАТОРЫ ====================
 
 app.get('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
     try {
@@ -112,8 +108,6 @@ app.post('/api/change-password', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
-
-// ==================== ТОВАРЫ ====================
 
 app.get('/api/products', async (req, res) => {
     try {
@@ -163,8 +157,6 @@ app.patch('/api/products/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// ==================== ИЗОБРАЖЕНИЯ (CLOUDINARY) ====================
-
 app.post('/api/delete-image', authenticateToken, async (req, res) => {
     const { imageUrl } = req.body;
     if (!imageUrl || imageUrl.includes('placehold.co')) return res.json({ success: true });
@@ -197,8 +189,6 @@ app.post('/api/delete-image', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Ошибка сервера при удалении медиафайла' });
     }
 });
-
-// ==================== КАНАЛЫ ====================
 
 app.get('/api/channels', async (req, res) => {
     try {
@@ -240,8 +230,6 @@ app.delete('/api/channels/:id', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
-
-// ==================== КАРТОЧКИ ====================
 
 app.get('/api/cards', async (req, res) => {
     try {
@@ -290,8 +278,6 @@ app.delete('/api/cards/:id', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
-
-// ==================== ССЫЛКИ КАРТОЧЕК ====================
 
 app.get('/api/card-links/:cardId', async (req, res) => {
     try {
