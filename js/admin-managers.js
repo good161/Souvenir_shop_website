@@ -21,7 +21,7 @@ async function loadAdmins() {
                 <div style="font-size:0.8rem;color:#64748b;">${escapeHtml(a.username)} (${a.role})</div>
             </div>
             <div style="display:flex;gap:0.3rem;">
-                <button class="modal-btn small" onclick="showEditAdminModal(${a.id}, '${escapeHtml(a.full_name || '').replace(/'/g, "\\'")}', '${escapeHtml(a.username).replace(/'/g, "\\'")}', '${a.role}')">✏️</button>
+                <button class="modal-btn small" onclick="showEditAdminModal(${a.id}, '${escapeHtml(a.full_name || '').replace(/'/g, "\\'")}', '${escapeHtml(a.username).replace(/'/g, "\\'")}', '${a.role}', ${JSON.stringify(a.permissions || { main: true, merch: true }).replace(/"/g, '&quot;')})">✏️</button>
                 ${a.role !== 'Protoadmin' ? `<button class="modal-btn small danger" onclick="deleteAdmin(${a.id})">🗑️</button>` : ''}
             </div>
         </div>
@@ -34,17 +34,23 @@ async function addAdmin() {
     const password = document.getElementById('newAdminPassword').value.trim();
     const full_name = document.getElementById('newAdminFullName').value.trim();
     const role = document.getElementById('newAdminRole').value || 'manager';
+    const permissions = {
+        main: document.getElementById('newPermMain').checked,
+        merch: document.getElementById('newPermMerch').checked
+    };
 
     if (!username || !password) return alert('Заполните логин и пароль');
 
     await fetch('/api/admins', {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ username, password, role, full_name })
+        body: JSON.stringify({ username, password, role, full_name, permissions })
     });
     document.getElementById('newAdminUsername').value = '';
     document.getElementById('newAdminPassword').value = '';
     document.getElementById('newAdminFullName').value = '';
+    document.getElementById('newPermMain').checked = true;
+    document.getElementById('newPermMerch').checked = true;
     loadAdmins();
 }
 
@@ -58,12 +64,27 @@ async function deleteAdmin(id) {
     }
 }
 
-function showEditAdminModal(id, fullName, username, role) {
+function showEditAdminModal(id, fullName, username, role, permissions) {
+    if (typeof permissions === 'string') {
+        try { permissions = JSON.parse(permissions); } catch (e) { permissions = { main: true, merch: true }; }
+    }
+    permissions = permissions || { main: true, merch: true };
+
     document.getElementById('editAdminId').value = id;
     document.getElementById('editAdminFullName').value = fullName;
     document.getElementById('editAdminUsername').value = username;
     document.getElementById('editAdminRole').value = role;
     document.getElementById('editAdminPassword').value = '';
+    document.getElementById('editPermMain').checked = !!permissions.main;
+    document.getElementById('editPermMerch').checked = !!permissions.merch;
+
+    const permsBlock = document.getElementById('editAdminPermissions');
+    permsBlock.style.display = role === 'Protoadmin' ? 'none' : 'flex';
+
+    document.getElementById('editAdminRole').addEventListener('change', function() {
+        permsBlock.style.display = this.value === 'Protoadmin' ? 'none' : 'flex';
+    });
+
     document.getElementById('editAdminModal').classList.add('show');
 }
 
@@ -77,10 +98,14 @@ async function saveAdminEdit() {
     const username = document.getElementById('editAdminUsername').value.trim();
     const role = document.getElementById('editAdminRole').value;
     const password = document.getElementById('editAdminPassword').value.trim();
+    const permissions = {
+        main: document.getElementById('editPermMain').checked,
+        merch: document.getElementById('editPermMerch').checked
+    };
 
     if (!username) return alert('Логин обязателен');
 
-    const payload = { username, full_name, role };
+    const payload = { username, full_name, role, permissions };
     if (password) payload.password = password;
 
     await fetch(`/api/admins/${id}`, {
