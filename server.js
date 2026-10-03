@@ -1,9 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const crypto = require('crypto');
+const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
 const { Pool } = require('pg');
 
 const app = express();
@@ -19,8 +20,32 @@ app.use(express.static(path.join(__dirname)));
 const JWT_SECRET = process.env.JWT_SECRET || 'chsu-merch-jwt-secret-2026';
 
 const pool = new Pool({
-    connectionString: 'postgresql://postgres.tomujzfwckslaylivjiq:ujuoiYHU784E87H-0IknuojDUO@aws-0-us-east-1.pooler.supabase.com:6543/postgres',
+    connectionString: process.env.DATABASE_URL || 'postgresql://postgres.tomujzfwckslaylivjiq:ujuoiYHU784E87H-0IknuojDUO@aws-0-us-east-1.pooler.supabase.com:6543/postgres',
     ssl: { rejectUnauthorized: false }
+});
+
+const SOUVENIRS_DIR = path.join(__dirname, 'images', 'Souvenirs');
+if (!fs.existsSync(SOUVENIRS_DIR)) {
+    fs.mkdirSync(SOUVENIRS_DIR, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, SOUVENIRS_DIR),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname).toLowerCase() || '.webp';
+        const uniqueName = `souvenir-${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
+        cb(null, uniqueName);
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        if (allowed.includes(file.mimetype)) cb(null, true);
+        else cb(new Error('Недопустимый формат файла'));
+    }
 });
 
 function generateToken(user) {
@@ -109,6 +134,34 @@ app.post('/api/change-password', authenticateToken, async (req, res) => {
     }
 });
 
+app.post('/api/upload-image', authenticateToken, upload.single('file'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'Файл не загружен' });
+    res.json({ success: true, url: `images/Souvenirs/${req.file.filename}` });
+});
+
+app.post('/api/delete-image', authenticateToken, (req, res) => {
+    const { imageUrl } = req.body;
+    if (!imageUrl) return res.status(400).json({ error: 'URL не указан' });
+
+    if (imageUrl.includes('placehold.co') || imageUrl.startsWith('http')) {
+        return res.json({ success: true, skipped: true });
+    }
+
+    try {
+        const decoded = decodeURIComponent(imageUrl);
+        const safeName = path.basename(decoded);
+        const filePath = path.join(SOUVENIRS_DIR, safeName);
+
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            return res.json({ success: true });
+        }
+        return res.json({ success: true, notFound: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка удаления файла' });
+    }
+});
+
 app.get('/api/products', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM products ORDER BY created_at DESC');
@@ -154,39 +207,6 @@ app.patch('/api/products/:id', authenticateToken, async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Ошибка сервера' });
-    }
-});
-
-app.post('/api/delete-image', authenticateToken, async (req, res) => {
-    const { imageUrl } = req.body;
-    if (!imageUrl || imageUrl.includes('placehold.co')) return res.json({ success: true });
-    try {
-        const parts = imageUrl.split('/');
-        const uploadIndex = parts.indexOf('upload');
-        if (uploadIndex === -1) return res.status(400).json({ error: 'Неверный URL изображения' });
-        const pathAfterUpload = parts.slice(uploadIndex + 2).join('/');
-        const publicId = pathAfterUpload.split('.')[0];
-        if (!publicId) return res.status(400).json({ error: 'Не удалось определить public_id' });
-        
-        const timestamp = Math.floor(Date.now() / 1000);
-        const apiSecret = process.env.CLOUDINARY_API_SECRET || 'wXSugPZb_b08BH2rGqq_KoOPA1g';
-        const stringToSign = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
-        const signature = crypto.createHash('sha1').update(stringToSign).digest('hex');
-        
-        const formData = new URLSearchParams();
-        formData.append('public_id', publicId);
-        formData.append('api_key', process.env.CLOUDINARY_API_KEY || '377457394998153');
-        formData.append('timestamp', timestamp);
-        formData.append('signature', signature);
-        
-        await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME || 'sd0mazc2'}/image/destroy`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formData.toString()
-        });
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: 'Ошибка сервера при удалении медиафайла' });
     }
 });
 
