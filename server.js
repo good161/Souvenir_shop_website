@@ -94,7 +94,7 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, username, role FROM admins ORDER BY id');
+        const result = await pool.query('SELECT id, username, full_name, role FROM admins ORDER BY id');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: 'Ошибка сервера' });
@@ -102,11 +102,26 @@ app.get('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req,
 });
 
 app.post('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
-    const { username, password, role } = req.body;
+    const { username, password, role, full_name } = req.body;
     if (!username || !password || !role) return res.status(400).json({ error: 'Все поля обязательны' });
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        await pool.query('INSERT INTO admins (username, password_hash, role) VALUES ($1,$2,$3)', [username, hashedPassword, role]);
+        await pool.query(
+            'INSERT INTO admins (username, password_hash, role, full_name) VALUES ($1,$2,$3,$4)',
+            [username, hashedPassword, role, full_name || '']
+        );
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+app.patch('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
+    const { username, full_name, role } = req.body;
+    try {
+        if (username) await pool.query('UPDATE admins SET username = $1 WHERE id = $2', [username, req.params.id]);
+        if (full_name !== undefined) await pool.query('UPDATE admins SET full_name = $1 WHERE id = $2', [full_name, req.params.id]);
+        if (role) await pool.query('UPDATE admins SET role = $1 WHERE id = $2', [role, req.params.id]);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Ошибка сервера' });
