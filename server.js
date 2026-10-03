@@ -117,11 +117,15 @@ app.post('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req
 });
 
 app.patch('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
-    const { username, full_name, role } = req.body;
+    const { username, full_name, role, password } = req.body;
     try {
         if (username) await pool.query('UPDATE admins SET username = $1 WHERE id = $2', [username, req.params.id]);
         if (full_name !== undefined) await pool.query('UPDATE admins SET full_name = $1 WHERE id = $2', [full_name, req.params.id]);
         if (role) await pool.query('UPDATE admins SET role = $1 WHERE id = $2', [role, req.params.id]);
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await pool.query('UPDATE admins SET password_hash = $1 WHERE id = $2', [hashedPassword, req.params.id]);
+        }
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Ошибка сервера' });
@@ -131,18 +135,6 @@ app.patch('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), async
 app.delete('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
     try {
         await pool.query('DELETE FROM admins WHERE id = $1', [req.params.id]);
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: 'Ошибка сервера' });
-    }
-});
-
-app.post('/api/change-password', authenticateToken, async (req, res) => {
-    const { password } = req.body;
-    if (!password) return res.status(400).json({ error: 'Пароль обязателен' });
-    try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await pool.query('UPDATE admins SET password_hash = $1 WHERE id = $2', [hashedPassword, req.user.id]);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Ошибка сервера' });
