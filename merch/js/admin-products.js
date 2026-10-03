@@ -2,14 +2,12 @@ let isSaving = false;
 let currentImages = [];
 
 function getAuthHeaders() {
-    const token = localStorage.getItem('authToken'); 
-    
+    const token = localStorage.getItem('authToken');
     return {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
     };
 }
-
 
 function showProductModal(product) {
     editingProductId = product ? product.id : null;
@@ -22,25 +20,32 @@ function showProductModal(product) {
     document.getElementById('productInStock').checked = product ? (product.inStock !== false) : true;
     document.getElementById('imageError').textContent = '';
     document.getElementById('productImageFile').value = '';
-    
+
     currentImages = [];
     const imagesPreview = document.getElementById('imagesPreview');
     imagesPreview.innerHTML = '';
-    
+
     if (product) {
         const images = product.images || (product.image ? [product.image] : []);
-        currentImages = images.filter(img => img && img !== 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image');
+        currentImages = images
+            .filter(img => img && img !== 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image')
+            .map(img => (img.startsWith('http') || img.startsWith('blob:')) ? img : '../' + img);
         renderImagePreviews();
     }
-    
+
     const removeBtn = document.getElementById('removeMainImage');
     if (removeBtn) removeBtn.style.display = currentImages.length > 0 ? 'inline-block' : 'none';
-    
+
     document.getElementById('variantsList').innerHTML = '';
     if (product && product.variants && Array.isArray(product.variants)) {
-        product.variants.forEach(v => addVariantRow(v.label, v.price, v.inStock !== false, v.image || '', v.description || ''));
+        product.variants.forEach(v => {
+            const vImage = v.image
+                ? ((v.image.startsWith('http') || v.image.startsWith('blob:')) ? v.image : '../' + v.image)
+                : '';
+            addVariantRow(v.label, v.price, v.inStock !== false, vImage, v.description || '');
+        });
     }
-    
+
     document.getElementById('productModal').classList.add('show');
 }
 
@@ -56,7 +61,7 @@ function renderImagePreviews() {
             </div>
         </div>
     `).join('');
-    
+
     if (currentImages.length < 5) {
         const label = document.createElement('label');
         label.style.cssText = 'width:80px;height:80px;border:2px dashed #e31e24;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#e31e24;font-size:1.5rem;';
@@ -66,7 +71,7 @@ function renderImagePreviews() {
         });
         container.appendChild(label);
     }
-    
+
     container.querySelectorAll('.remove-image-btn').forEach(btn => {
         btn.addEventListener('click', async function() {
             if (confirm('Удалить это фото?')) {
@@ -74,7 +79,7 @@ function renderImagePreviews() {
             }
         });
     });
-    
+
     container.querySelectorAll('.move-left-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const index = parseInt(this.dataset.index);
@@ -94,17 +99,18 @@ function renderImagePreviews() {
             }
         });
     });
-    
+
     document.getElementById('removeMainImage').style.display = currentImages.length > 0 ? 'inline-block' : 'none';
 }
 
 async function removeImage(index) {
     const img = currentImages[index];
-    if (img && !img.startsWith('blob:')) {
+    if (img && !img.startsWith('blob:') && !img.startsWith('http')) {
+        const cleanPath = img.replace(/^\.\.\//, '');
         await fetch('/api/delete-image', {
             method: 'POST',
             headers: getAuthHeaders(),
-            body: JSON.stringify({ imageUrl: img })
+            body: JSON.stringify({ imageUrl: cleanPath })
         });
     }
     currentImages.splice(index, 1);
@@ -129,11 +135,11 @@ function hideProductModal() {
 async function saveProduct() {
     if (isSaving) return;
     isSaving = true;
-    
+
     const saveBtn = document.getElementById('productSave');
     saveBtn.disabled = true;
     saveBtn.textContent = 'Сохранение...';
-    
+
     try {
         const id = document.getElementById('productId').value;
         const name = document.getElementById('productName').value.trim();
@@ -142,44 +148,46 @@ async function saveProduct() {
         const inStock = document.getElementById('productInStock').checked;
         const variants = await getVariantsFromForm();
         let price = parseInt(document.getElementById('productPrice').value);
-        
+
         if (!name) { alert('Введите название товара'); return; }
         if (!variants && isNaN(price)) { alert('Введите цену или добавьте варианты'); return; }
-        
+
         if (isNaN(price) || price < 0) price = 0;
         if (variants && variants.length > 0) price = null;
         if (!price && (!variants || variants.length === 0)) price = 0;
-        
+
         for (let i = 0; i < currentImages.length; i++) {
             if (currentImages[i].startsWith('blob:')) {
                 const response = await fetch(currentImages[i]);
                 const blob = await response.blob();
                 const file = new File([blob], 'image.jpg', { type: blob.type });
-                const uploadedUrl = await uploadToCloudinary(file);
+                const uploadedUrl = await uploadToServer(file);
                 if (uploadedUrl) currentImages[i] = uploadedUrl;
+            } else if (currentImages[i].startsWith('../')) {
+                currentImages[i] = currentImages[i].replace(/^\.\.\//, '');
             }
         }
-        
+
         const imageInput = document.getElementById('productImageFile');
         if (imageInput.files.length > 0) {
             for (const file of imageInput.files) {
-                const uploadedUrl = await uploadToCloudinary(file);
+                const uploadedUrl = await uploadToServer(file);
                 if (uploadedUrl) currentImages.push(uploadedUrl);
             }
         }
-        
-        const cleanImages = currentImages.filter(img => img && !img.startsWith('blob:'));
+
+        const cleanImages = currentImages.filter(img => img && !img.startsWith('blob:') && !img.startsWith('../'));
         const images = cleanImages.length > 0 ? cleanImages : [];
         const mainImage = images.length > 0 ? images[0] : 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
-        
+
         const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image: mainImage, images, description, inStock, price, variants };
-        
+
         await fetch('/api/products', {
             method: 'POST',
             headers: getAuthHeaders(),
             body: JSON.stringify(productData)
         });
-        
+
         await loadProductsFromDB();
         hideProductModal();
         updateCategoryButtons();
@@ -197,7 +205,7 @@ async function deleteProduct(id) {
         if (product) {
             const allImages = product.images || (product.image ? [product.image] : []);
             for (const img of allImages) {
-                if (img && !img.includes('placehold.co') && !img.startsWith('blob:')) {
+                if (img && !img.includes('placehold.co') && !img.startsWith('blob:') && !img.startsWith('http')) {
                     await fetch('/api/delete-image', {
                         method: 'POST',
                         headers: getAuthHeaders(),
@@ -207,7 +215,7 @@ async function deleteProduct(id) {
             }
             if (product.variants && Array.isArray(product.variants)) {
                 for (const v of product.variants) {
-                    if (v.image && !v.image.includes('placehold.co') && !v.image.startsWith('blob:')) {
+                    if (v.image && !v.image.includes('placehold.co') && !v.image.startsWith('blob:') && !v.image.startsWith('http')) {
                         await fetch('/api/delete-image', {
                             method: 'POST',
                             headers: getAuthHeaders(),
@@ -256,7 +264,7 @@ function initAdminProducts() {
     document.getElementById('productSave').addEventListener('click', saveProduct);
     document.getElementById('productCancel').addEventListener('click', hideProductModal);
     document.getElementById('addVariant').addEventListener('click', () => addVariantRow());
-    
+
     document.getElementById('productImageFile').addEventListener('change', function() {
         const files = this.files;
         if (files.length > 0) {
@@ -276,11 +284,11 @@ function initAdminProducts() {
             this.value = '';
         }
     });
-    
+
     document.getElementById('removeMainImage').addEventListener('click', async function() {
         if (confirm('Удалить ВСЕ фото?')) {
             for (const img of currentImages) {
-                if (img && !img.startsWith('blob:')) {
+                if (img && !img.startsWith('blob:') && !img.startsWith('http') && !img.startsWith('../')) {
                     await fetch('/api/delete-image', {
                         method: 'POST',
                         headers: getAuthHeaders(),
