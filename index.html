@@ -97,6 +97,10 @@
                     <option value="manager">Менеджер</option>
                 </select>
             </div>
+            <div id="newAdminPermissions" style="margin-top:0.5rem;display:flex;gap:1rem;flex-wrap:wrap;">
+                <label class="checkbox-label"><input type="checkbox" id="newPermMain" checked> Редактирование главной</label>
+                <label class="checkbox-label"><input type="checkbox" id="newPermMerch" checked> Редактирование мерча</label>
+            </div>
             <button id="addAdminBtn" class="modal-btn primary" style="margin-top:0.5rem;">Добавить</button>
             <button id="closeAdminsBtn" class="modal-btn" style="margin-top:0.5rem;">Закрыть</button>
         </div>
@@ -113,6 +117,10 @@
                 <option value="Protoadmin">Protoadmin</option>
             </select>
             <input type="password" id="editAdminPassword" placeholder="Новый пароль (оставьте пустым, чтобы не менять)" class="modal-input">
+            <div id="editAdminPermissions" style="margin-top:0.5rem;display:flex;gap:1rem;flex-wrap:wrap;">
+                <label class="checkbox-label"><input type="checkbox" id="editPermMain"> Редактирование главной</label>
+                <label class="checkbox-label"><input type="checkbox" id="editPermMerch"> Редактирование мерча</label>
+            </div>
             <div class="modal-buttons">
                 <button id="saveEditAdminBtn" class="modal-btn primary">Сохранить</button>
                 <button id="closeEditAdminBtn" class="modal-btn">Отмена</button>
