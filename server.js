@@ -49,8 +49,11 @@ const upload = multer({
 });
 
 function generateToken(user) {
+    const permissions = user.role === 'Protoadmin'
+        ? { main: true, merch: true }
+        : (user.permissions || { main: true, merch: true });
     return jwt.sign(
-        { id: user.id, username: user.username, role: user.role },
+        { id: user.id, username: user.username, role: user.role, permissions },
         JWT_SECRET,
         { expiresIn: '24h', algorithm: 'HS256' }
     );
@@ -76,6 +79,17 @@ function requireRole(role) {
     };
 }
 
+function requirePermission(perm) {
+    return (req, res, next) => {
+        if (req.user.role === 'Protoadmin') return next();
+        const perms = req.user.permissions || {};
+        if (!perms[perm]) {
+            return res.status(403).json({ error: 'Недостаточно прав' });
+        }
+        next();
+    };
+}
+
 app.post('/api/login', async (req, res) => {
     const { login, password } = req.body;
     if (!login || !password) return res.status(400).json({ error: 'Логин и пароль обязательны' });
@@ -86,7 +100,10 @@ app.post('/api/login', async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
         if (!isPasswordValid) return res.status(401).json({ error: 'Неверный логин или пароль' });
         const token = generateToken(user);
-        res.json({ success: true, token, role: user.role });
+        const permissions = user.role === 'Protoadmin'
+            ? { main: true, merch: true }
+            : (user.permissions || { main: true, merch: true });
+        res.json({ success: true, token, role: user.role, permissions });
     } catch (err) {
         res.status(500).json({ error: 'Ошибка сервера' });
     }
@@ -94,7 +111,7 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, username, full_name, role FROM admins ORDER BY id');
+        const result = await pool.query('SELECT id, username, full_name, role, permissions FROM admins ORDER BY id');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: 'Ошибка сервера' });
@@ -102,13 +119,14 @@ app.get('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req,
 });
 
 app.post('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
-    const { username, password, role, full_name } = req.body;
+    const { username, password, role, full_name, permissions } = req.body;
     if (!username || !password || !role) return res.status(400).json({ error: 'Все поля обязательны' });
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
+        const perms = permissions || { main: true, merch: true };
         await pool.query(
-            'INSERT INTO admins (username, password_hash, role, full_name) VALUES ($1,$2,$3,$4)',
-            [username, hashedPassword, role, full_name || '']
+            'INSERT INTO admins (username, password_hash, role, full_name, permissions) VALUES ($1,$2,$3,$4,$5)',
+            [username, hashedPassword, role, full_name || '', JSON.stringify(perms)]
         );
         res.json({ success: true });
     } catch (err) {
@@ -117,11 +135,12 @@ app.post('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req
 });
 
 app.patch('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
-    const { username, full_name, role, password } = req.body;
+    const { username, full_name, role, password, permissions } = req.body;
     try {
         if (username) await pool.query('UPDATE admins SET username = $1 WHERE id = $2', [username, req.params.id]);
         if (full_name !== undefined) await pool.query('UPDATE admins SET full_name = $1 WHERE id = $2', [full_name, req.params.id]);
         if (role) await pool.query('UPDATE admins SET role = $1 WHERE id = $2', [role, req.params.id]);
+        if (permissions) await pool.query('UPDATE admins SET permissions = $1 WHERE id = $2', [JSON.stringify(permissions), req.params.id]);
         if (password) {
             const hashedPassword = await bcrypt.hash(password, 10);
             await pool.query('UPDATE admins SET password_hash = $1 WHERE id = $2', [hashedPassword, req.params.id]);
@@ -141,12 +160,12 @@ app.delete('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), asyn
     }
 });
 
-app.post('/api/upload-image', authenticateToken, upload.single('file'), (req, res) => {
+app.post('/api/upload-image', authenticateToken, requirePermission('merch'), upload.single('file'), (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'Файл не загружен' });
     res.json({ success: true, url: `images/Souvenirs/${req.file.filename}` });
 });
 
-app.post('/api/delete-image', authenticateToken, (req, res) => {
+app.post('/api/delete-image', authenticateToken, requirePermission('merch'), (req, res) => {
     const { imageUrl } = req.body;
     if (!imageUrl) return res.status(400).json({ error: 'URL не указан' });
 
@@ -183,7 +202,7 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
-app.post('/api/products', authenticateToken, async (req, res) => {
+app.post('/api/products', authenticateToken, requirePermission('merch'), async (req, res) => {
     try {
         const { id, name, category, image, images, price, description, inStock, variants } = req.body;
         await pool.query(
@@ -198,7 +217,7 @@ app.post('/api/products', authenticateToken, async (req, res) => {
     }
 });
 
-app.delete('/api/products/:id', authenticateToken, async (req, res) => {
+app.delete('/api/products/:id', authenticateToken, requirePermission('merch'), async (req, res) => {
     try {
         await pool.query('DELETE FROM products WHERE id = $1', [req.params.id]);
         res.json({ success: true });
@@ -207,7 +226,7 @@ app.delete('/api/products/:id', authenticateToken, async (req, res) => {
     }
 });
 
-app.patch('/api/products/:id', authenticateToken, async (req, res) => {
+app.patch('/api/products/:id', authenticateToken, requirePermission('merch'), async (req, res) => {
     try {
         const { archived, inStock } = req.body;
         await pool.query('UPDATE products SET archived = $1, in_stock = $2 WHERE id = $3', [archived, inStock, req.params.id]);
@@ -226,7 +245,7 @@ app.get('/api/channels', async (req, res) => {
     }
 });
 
-app.post('/api/channels', authenticateToken, async (req, res) => {
+app.post('/api/channels', authenticateToken, requirePermission('main'), async (req, res) => {
     const { name, url, icon } = req.body;
     if (!name || !url) return res.status(400).json({ error: 'Название и URL обязательны' });
     try {
@@ -237,7 +256,7 @@ app.post('/api/channels', authenticateToken, async (req, res) => {
     }
 });
 
-app.patch('/api/channels/:id', authenticateToken, async (req, res) => {
+app.patch('/api/channels/:id', authenticateToken, requirePermission('main'), async (req, res) => {
     const { name, url, display_order } = req.body;
     try {
         if (name) await pool.query('UPDATE channels SET name = $1 WHERE id = $2', [name, req.params.id]);
@@ -249,7 +268,7 @@ app.patch('/api/channels/:id', authenticateToken, async (req, res) => {
     }
 });
 
-app.delete('/api/channels/:id', authenticateToken, async (req, res) => {
+app.delete('/api/channels/:id', authenticateToken, requirePermission('main'), async (req, res) => {
     try {
         await pool.query('DELETE FROM channels WHERE id = $1', [req.params.id]);
         res.json({ success: true });
@@ -267,7 +286,7 @@ app.get('/api/cards', async (req, res) => {
     }
 });
 
-app.post('/api/cards', authenticateToken, async (req, res) => {
+app.post('/api/cards', authenticateToken, requirePermission('main'), async (req, res) => {
     const { id, name, description, url, display_order } = req.body;
     if (!id || !name) return res.status(400).json({ error: 'ID и название обязательны' });
     try {
@@ -281,7 +300,7 @@ app.post('/api/cards', authenticateToken, async (req, res) => {
     }
 });
 
-app.patch('/api/cards/:id', authenticateToken, async (req, res) => {
+app.patch('/api/cards/:id', authenticateToken, requirePermission('main'), async (req, res) => {
     const { name, description, url } = req.body;
     try {
         if (name) await pool.query('UPDATE cards SET name = $1 WHERE id = $2', [name, req.params.id]);
@@ -293,7 +312,7 @@ app.patch('/api/cards/:id', authenticateToken, async (req, res) => {
     }
 });
 
-app.delete('/api/cards/:id', authenticateToken, async (req, res) => {
+app.delete('/api/cards/:id', authenticateToken, requirePermission('main'), async (req, res) => {
     const protectedCards = ['merch', 'official-channels', 'it-services', 'bots'];
     if (protectedCards.includes(req.params.id)) {
         return res.status(403).json({ error: 'Эту карточку удалить нельзя' });
@@ -315,7 +334,7 @@ app.get('/api/card-links/:cardId', async (req, res) => {
     }
 });
 
-app.post('/api/card-links', authenticateToken, async (req, res) => {
+app.post('/api/card-links', authenticateToken, requirePermission('main'), async (req, res) => {
     const { card_id, name, url, description } = req.body;
     if (!card_id || !name || !url) return res.status(400).json({ error: 'Все поля обязательны' });
     try {
@@ -326,7 +345,7 @@ app.post('/api/card-links', authenticateToken, async (req, res) => {
     }
 });
 
-app.patch('/api/card-links/:id', authenticateToken, async (req, res) => {
+app.patch('/api/card-links/:id', authenticateToken, requirePermission('main'), async (req, res) => {
     const { name, url, description, display_order } = req.body;
     try {
         if (name) await pool.query('UPDATE card_links SET name = $1 WHERE id = $2', [name, req.params.id]);
@@ -339,7 +358,7 @@ app.patch('/api/card-links/:id', authenticateToken, async (req, res) => {
     }
 });
 
-app.delete('/api/card-links/:id', authenticateToken, async (req, res) => {
+app.delete('/api/card-links/:id', authenticateToken, requirePermission('main'), async (req, res) => {
     try {
         await pool.query('DELETE FROM card_links WHERE id = $1', [req.params.id]);
         res.json({ success: true });
