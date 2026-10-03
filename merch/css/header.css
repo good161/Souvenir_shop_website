@@ -48,10 +48,35 @@
     font-weight: 500;
 }
 
+.shop-notice {
+    background: #fef2f2;
+    border-left: 4px solid #e31e24;
+    color: #1e293b;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.5;
+    padding: 0.9rem 1.2rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+@media (max-width: 640px) {
+    .shop-notice {
+        font-size: 0.85rem;
+        padding: 0.7rem 0.9rem;
+        border-radius: 10px;
+    }
+}
+
 @media (max-width: 400px) {
     .search-input {
         padding: 0.6rem 0.8rem;
         font-size: 0.85rem;
         border-radius: 12px;
+    }
+    .shop-notice {
+        font-size: 0.78rem;
+        padding: 0.6rem 0.8rem;
     }
 }
