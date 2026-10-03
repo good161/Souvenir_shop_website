@@ -1,6 +1,6 @@
 function addVariantRow(label = '', price = '', inStock = true, image = '', description = '') {
     const container = document.getElementById('variantsList');
-    const hasValidImage = image && image.startsWith('http') && !image.includes('vercel.app');
+    const hasValidImage = image && image.length > 0 && !image.includes('vercel.app');
     const row = document.createElement('div');
     row.className = 'variant-row';
     row.style.border = inStock ? '2px solid #22c55e' : '2px solid #e2e8f0';
