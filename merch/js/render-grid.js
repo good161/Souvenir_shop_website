@@ -43,12 +43,12 @@ function renderProducts(products) {
             const priceEl = document.getElementById(`price-${productId}`);
             const card = document.querySelector(`.product-card[data-id="${productId}"]`);
             const product = products.find(p => p.id === productId);
-            
+
             if (priceEl) priceEl.textContent = price ? formatPrice(price) : '';
             if (card) {
                 const desc = card.querySelector('.product-description');
                 if (desc) desc.textContent = description || '';
-                
+
                 if (product && !isRealImage(product.image)) {
                     const img = card.querySelector('.product-image-wrapper img');
                     if (img && this.dataset.image) {
@@ -66,17 +66,17 @@ function renderProducts(products) {
             const productId = this.dataset.product;
             const card = document.querySelector(`.product-card[data-id="${productId}"]`);
             if (!card) return;
-            
+
             const allImages = JSON.parse(card.dataset.allImages || '[]');
             if (allImages.length === 0) return;
-            
+
             let currentIndex = parseInt(card.dataset.currentIndex || '0');
             if (this.classList.contains('gallery-next')) {
                 currentIndex = (currentIndex + 1) % allImages.length;
             } else {
                 currentIndex = (currentIndex - 1 + allImages.length) % allImages.length;
             }
-            
+
             card.dataset.currentIndex = currentIndex;
             const img = card.querySelector('.product-image-wrapper img');
             const counter = card.querySelector('.gallery-counter');
