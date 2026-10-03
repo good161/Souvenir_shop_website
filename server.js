@@ -114,7 +114,8 @@ app.get('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req,
         const result = await pool.query('SELECT id, username, full_name, role, permissions FROM admins ORDER BY id');
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: 'Ошибка сервера' });
+        console.error('GET /api/admins error:', err.message);
+        res.status(500).json({ error: 'Ошибка сервера', detail: err.message });
     }
 });
 
@@ -130,7 +131,8 @@ app.post('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req
         );
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: 'Ошибка сервера' });
+        console.error('POST /api/admins error:', err.message);
+        res.status(500).json({ error: 'Ошибка сервера', detail: err.message });
     }
 });
 
@@ -147,7 +149,8 @@ app.patch('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), async
         }
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: 'Ошибка сервера' });
+        console.error('PATCH /api/admins error:', err.message);
+        res.status(500).json({ error: 'Ошибка сервера', detail: err.message });
     }
 });
 
