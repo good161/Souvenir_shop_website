@@ -1,17 +1,20 @@
 let authToken = localStorage.getItem('authToken') || '';
 
-// Переменные для админа
 let isAdmin = false;
 let adminRole = '';
+let adminPermissions = { main: true, merch: true };
 let editingProductId = null;
 let showArchived = false;
 
-// Проверяем localStorage при загрузке (восстанавливаем сессию)
 if (localStorage.getItem('isAdmin') === 'true') {
     isAdmin = true;
+    try {
+        adminPermissions = JSON.parse(localStorage.getItem('adminPermissions') || '{"main":true,"merch":true}');
+    } catch (e) {
+        adminPermissions = { main: true, merch: true };
+    }
 }
 
-// ===== ПРОВЕРКА СРОКА ДЕЙСТВИЯ ТОКЕНА =====
 function isTokenExpired(token) {
     if (!token) return true;
     try {
@@ -23,59 +26,63 @@ function isTokenExpired(token) {
     }
 }
 
-// ===== ОЧИСТКА СЕССИИ =====
 function clearAdminSession() {
     authToken = '';
     isAdmin = false;
     adminRole = '';
+    adminPermissions = { main: false, merch: false };
     showArchived = false;
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('authToken');
     localStorage.removeItem('adminRole');
-    
+    localStorage.removeItem('adminPermissions');
+
     const adminBtn = document.getElementById('adminBtn');
     if (adminBtn) adminBtn.classList.remove('active');
-    
+
     const showAdminsBtn = document.getElementById('showAdminsBtn');
     if (showAdminsBtn) showAdminsBtn.style.display = 'none';
-    
+
     updateAdminUI();
 }
 
-// ===== ФУНКЦИЯ ОБНОВЛЕНИЯ UI =====
 function updateAdminUI() {
-    const isAdmin = localStorage.getItem('isAdmin') === 'true';
-    
-    // Показываем/скрываем кнопку добавления карточки
+    const storedIsAdmin = localStorage.getItem('isAdmin') === 'true';
+    let perms = { main: false, merch: false };
+    try {
+        perms = JSON.parse(localStorage.getItem('adminPermissions') || '{"main":false,"merch":false}');
+    } catch (e) {}
+    const role = localStorage.getItem('adminRole') || '';
+    const canMain = storedIsAdmin && (role === 'Protoadmin' || perms.main);
+
     const showAddCardModal = document.getElementById('showAddCardModal');
     if (showAddCardModal) {
-        showAddCardModal.style.display = isAdmin ? 'flex' : 'none';
+        showAddCardModal.style.display = canMain ? 'flex' : 'none';
     }
-    
-    // Добавляем/удаляем иконки редактирования карточек
-    if (isAdmin) {
+
+    if (canMain) {
         document.querySelectorAll('.service-card').forEach(card => {
             if (card.querySelector('.edit-icon')) return;
-            
+
             const editBtn = document.createElement('span');
             editBtn.textContent = '✏️';
             editBtn.className = 'edit-icon';
             editBtn.style.cssText = 'position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:white;border:2px solid #e31e24;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0.7;transition:opacity 0.2s,transform 0.2s,box-shadow 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.1);font-size:0.9rem;z-index:10;line-height:1;padding:0;';
             editBtn.title = 'Редактировать карточку';
             card.appendChild(editBtn);
-            
+
             editBtn.addEventListener('mouseenter', () => {
                 editBtn.style.opacity = '1';
                 editBtn.style.transform = 'scale(1.1)';
                 editBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
             });
-            
+
             editBtn.addEventListener('mouseleave', () => {
                 editBtn.style.opacity = '0.7';
                 editBtn.style.transform = 'scale(1)';
                 editBtn.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
             });
-            
+
             editBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const cardId = card.getAttribute('data-service');
@@ -99,7 +106,6 @@ function hideLoginModal() {
 }
 
 function getAuthHeaders() {
-    // Проверяем, не протух ли токен
     const token = localStorage.getItem('authToken');
     if (isTokenExpired(token)) {
         clearAdminSession();
@@ -116,18 +122,23 @@ function getAuthHeaders() {
 function restoreSession() {
     const savedToken = localStorage.getItem('authToken');
     const savedRole = localStorage.getItem('adminRole');
-    
-    // Проверяем, не протух ли токен
+    let savedPerms = { main: true, merch: true };
+    try {
+        savedPerms = JSON.parse(localStorage.getItem('adminPermissions') || '{"main":true,"merch":true}');
+    } catch (e) {}
+
     if (savedToken && savedRole && !isTokenExpired(savedToken)) {
         authToken = savedToken;
         isAdmin = true;
         adminRole = savedRole;
+        adminPermissions = savedPerms;
         document.getElementById('adminBtn').classList.add('active');
-        document.getElementById('showAdminsBtn').style.display = 'block';
+        if (savedRole === 'Protoadmin') {
+            document.getElementById('showAdminsBtn').style.display = 'block';
+        }
         updateAdminUI();
         return true;
     } else if (savedToken && isTokenExpired(savedToken)) {
-        // Токен протух — очищаем сессию
         clearAdminSession();
         return false;
     }
@@ -136,7 +147,7 @@ function restoreSession() {
 
 function initAdminAuth() {
     restoreSession();
-    
+
     document.getElementById('loginSubmit').addEventListener('click', async () => {
         const login = document.getElementById('loginInput').value;
         const password = document.getElementById('passwordInput').value;
@@ -155,11 +166,15 @@ function initAdminAuth() {
                 authToken = data.token;
                 isAdmin = true;
                 adminRole = data.role;
+                adminPermissions = data.permissions || { main: true, merch: true };
                 localStorage.setItem('authToken', authToken);
                 localStorage.setItem('adminRole', data.role);
                 localStorage.setItem('isAdmin', 'true');
-                
-                document.getElementById('showAdminsBtn').style.display = 'block';
+                localStorage.setItem('adminPermissions', JSON.stringify(adminPermissions));
+
+                if (data.role === 'Protoadmin') {
+                    document.getElementById('showAdminsBtn').style.display = 'block';
+                }
                 document.getElementById('adminBtn').classList.add('active');
                 updateAdminUI();
                 hideLoginModal();
@@ -172,7 +187,7 @@ function initAdminAuth() {
             errorElement.classList.add('show');
         }
     });
-    
+
     document.getElementById('loginCancel').addEventListener('click', hideLoginModal);
 }
 
@@ -185,7 +200,6 @@ document.getElementById('adminBtn').addEventListener('click', () => {
     }
 });
 
-// Вызываем при загрузке
 updateAdminUI();
 
 initAdminAuth();
