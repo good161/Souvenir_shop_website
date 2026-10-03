@@ -8,7 +8,8 @@ function escapeHtml(text) {
 function getImagePath(image) {
     if (!image) return 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
     if (image.startsWith('http') || image.startsWith('blob:')) return image;
-    return image;
+    const safe = image.replace(/,/g, '%2C');
+    return '../' + safe;
 }
 
 function isRealImage(image) {
@@ -20,15 +21,15 @@ function renderProductCard(product) {
     const productImage = allImages.length > 0 ? getImagePath(allImages[0]) : 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
     const isFullyOutOfStock = !isProductAvailable(product);
     const isArchived = product.archived === true;
-    
+
     let mainImage = productImage;
     let mainDescription = product.description || '';
     let priceHtml = `<div class="price">${product.price !== null && product.price !== undefined && product.price !== 0 ? formatPrice(product.price) : ''}</div>`;
     let variantsHtml = '';
     let galleryHtml = '';
-    
+
     const variantsArray = Array.isArray(product.variants) ? product.variants : [];
-    
+
     if (variantsArray.length > 0) {
         const firstAvailable = variantsArray.find(v => v.inStock !== false);
         if (isRealImage(product.image)) {
@@ -38,7 +39,7 @@ function renderProductCard(product) {
             mainImage = getImagePath(firstAvailable.image) || productImage;
             mainDescription = firstAvailable.description || product.description || '';
         }
-        
+
         variantsHtml = `<div class="product-variants">${variantsArray.map((v, i) => {
             const out = v.inStock === false;
             const active = firstAvailable && v.label === firstAvailable.label && v.price === firstAvailable.price;
@@ -51,7 +52,7 @@ function renderProductCard(product) {
         }).join('')}</div>`;
         priceHtml = `<div class="price" id="price-${product.id}">${firstAvailable && firstAvailable.price !== 0 ? formatPrice(firstAvailable.price) : ''}</div>`;
     }
-    
+
     if (allImages.length > 1) {
         galleryHtml = `
             <div class="gallery-nav">
@@ -60,7 +61,7 @@ function renderProductCard(product) {
                 <button class="gallery-arrow gallery-next" data-product="${product.id}">›</button>
             </div>`;
     }
-    
+
     const card = document.createElement('div');
     card.className = `product-card ${isFullyOutOfStock && !isArchived ? 'out-of-stock' : ''} ${isArchived ? 'archived' : ''}`;
     card.dataset.id = product.id;
@@ -84,13 +85,13 @@ function renderProductCard(product) {
                 <button class="modal-btn small danger delete-product-btn">🗑️</button>
             </div>` : ''}
         </div>`;
-    
+
     if (isAdmin) {
         card.querySelector('.edit-product-btn').addEventListener('click', (e) => { e.stopPropagation(); showProductModal(products.find(p => p.id === product.id)); });
         if (!product.archived) card.querySelector('.archive-product-btn').addEventListener('click', (e) => { e.stopPropagation(); archiveProduct(product.id); });
         else card.querySelector('.restore-product-btn').addEventListener('click', (e) => { e.stopPropagation(); restoreProduct(product.id); });
         card.querySelector('.delete-product-btn').addEventListener('click', (e) => { e.stopPropagation(); deleteProduct(product.id); });
     }
-    
+
     return card;
 }
