@@ -22,7 +22,6 @@ async function loadAdmins() {
             </div>
             <div style="display:flex;gap:0.3rem;">
                 <button class="modal-btn small" onclick="showEditAdminModal(${a.id}, '${escapeHtml(a.full_name || '').replace(/'/g, "\\'")}', '${escapeHtml(a.username).replace(/'/g, "\\'")}', '${a.role}')">✏️</button>
-                ${a.role === 'Protoadmin' ? `<button class="modal-btn small" onclick="showChangePasswordModal()">🔑</button>` : ''}
                 ${a.role !== 'Protoadmin' ? `<button class="modal-btn small danger" onclick="deleteAdmin(${a.id})">🗑️</button>` : ''}
             </div>
         </div>
@@ -64,6 +63,7 @@ function showEditAdminModal(id, fullName, username, role) {
     document.getElementById('editAdminFullName').value = fullName;
     document.getElementById('editAdminUsername').value = username;
     document.getElementById('editAdminRole').value = role;
+    document.getElementById('editAdminPassword').value = '';
     document.getElementById('editAdminModal').classList.add('show');
 }
 
@@ -76,46 +76,20 @@ async function saveAdminEdit() {
     const full_name = document.getElementById('editAdminFullName').value.trim();
     const username = document.getElementById('editAdminUsername').value.trim();
     const role = document.getElementById('editAdminRole').value;
+    const password = document.getElementById('editAdminPassword').value.trim();
 
     if (!username) return alert('Логин обязателен');
+
+    const payload = { username, full_name, role };
+    if (password) payload.password = password;
 
     await fetch(`/api/admins/${id}`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
-        body: JSON.stringify({ username, full_name, role })
+        body: JSON.stringify(payload)
     });
     hideEditAdminModal();
     loadAdmins();
-}
-
-function showChangePasswordModal() {
-    document.getElementById('changePasswordModal').classList.add('show');
-    document.getElementById('newPassword').value = '';
-}
-
-function hideChangePasswordModal() {
-    document.getElementById('changePasswordModal').classList.remove('show');
-}
-
-async function changePassword() {
-    const newPassword = document.getElementById('newPassword').value.trim();
-    if (!newPassword) return alert('Введите новый пароль');
-
-    await fetch('/api/change-password', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ password: newPassword })
-    });
-
-    hideChangePasswordModal();
-    alert('Пароль изменён. Войдите заново.');
-    isAdmin = false;
-    adminRole = '';
-    localStorage.removeItem('isAdmin');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('adminRole');
-    authToken = '';
-    if (typeof updateAdminUI === 'function') updateAdminUI();
 }
 
 function showAdminsModal() {
@@ -131,8 +105,6 @@ function initAdminManagers() {
     document.getElementById('showAdminsBtn').addEventListener('click', showAdminsModal);
     document.getElementById('closeAdminsBtn').addEventListener('click', hideAdminsModal);
     document.getElementById('addAdminBtn').addEventListener('click', addAdmin);
-    document.getElementById('changePasswordBtn').addEventListener('click', changePassword);
-    document.getElementById('closeChangePasswordBtn').addEventListener('click', hideChangePasswordModal);
 
     const saveEditBtn = document.getElementById('saveEditAdminBtn');
     if (saveEditBtn) saveEditBtn.addEventListener('click', saveAdminEdit);
