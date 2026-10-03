@@ -111,6 +111,7 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req, res) => {
     try {
+        res.set('Cache-Control', 'no-store');
         const result = await pool.query('SELECT id, username, full_name, role, permissions FROM admins ORDER BY id');
         res.json(result.rows);
     } catch (err) {
@@ -131,6 +132,9 @@ app.post('/api/admins', authenticateToken, requireRole('Protoadmin'), async (req
         );
         res.json({ success: true });
     } catch (err) {
+        if (err.code === '23505') {
+            return res.status(400).json({ error: 'Такой логин уже существует' });
+        }
         console.error('POST /api/admins error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера', detail: err.message });
     }
@@ -149,6 +153,9 @@ app.patch('/api/admins/:id', authenticateToken, requireRole('Protoadmin'), async
         }
         res.json({ success: true });
     } catch (err) {
+        if (err.code === '23505') {
+            return res.status(400).json({ error: 'Такой логин уже существует' });
+        }
         console.error('PATCH /api/admins error:', err.message);
         res.status(500).json({ error: 'Ошибка сервера', detail: err.message });
     }
@@ -193,6 +200,7 @@ app.post('/api/delete-image', authenticateToken, requirePermission('merch'), (re
 
 app.get('/api/products', async (req, res) => {
     try {
+        res.set('Cache-Control', 'no-store');
         const result = await pool.query('SELECT * FROM products ORDER BY created_at DESC');
         res.json(result.rows.map(p => ({
             id: p.id, name: p.name, category: p.category,
@@ -241,6 +249,7 @@ app.patch('/api/products/:id', authenticateToken, requirePermission('merch'), as
 
 app.get('/api/channels', async (req, res) => {
     try {
+        res.set('Cache-Control', 'no-store');
         const result = await pool.query('SELECT * FROM channels ORDER BY display_order, id');
         res.json(result.rows);
     } catch (err) {
@@ -249,10 +258,10 @@ app.get('/api/channels', async (req, res) => {
 });
 
 app.post('/api/channels', authenticateToken, requirePermission('main'), async (req, res) => {
-    const { name, url, icon } = req.body;
+    const { name, url } = req.body;
     if (!name || !url) return res.status(400).json({ error: 'Название и URL обязательны' });
     try {
-        await pool.query('INSERT INTO channels (name, url, icon) VALUES ($1,$2,$3)', [name, url, icon || '🌐']);
+        await pool.query('INSERT INTO channels (name, url) VALUES ($1,$2)', [name, url]);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Ошибка сервера' });
@@ -282,6 +291,7 @@ app.delete('/api/channels/:id', authenticateToken, requirePermission('main'), as
 
 app.get('/api/cards', async (req, res) => {
     try {
+        res.set('Cache-Control', 'no-store');
         const result = await pool.query('SELECT * FROM cards ORDER BY display_order, id');
         res.json(result.rows);
     } catch (err) {
@@ -330,6 +340,7 @@ app.delete('/api/cards/:id', authenticateToken, requirePermission('main'), async
 
 app.get('/api/card-links/:cardId', async (req, res) => {
     try {
+        res.set('Cache-Control', 'no-store');
         const result = await pool.query('SELECT * FROM card_links WHERE card_id = $1 ORDER BY display_order, id', [req.params.cardId]);
         res.json(result.rows);
     } catch (err) {
