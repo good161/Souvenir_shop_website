@@ -1,120 +1,293 @@
-function addVariantRow(label = '', price = '', inStock = true, image = '', description = '') {
-    const container = document.getElementById('variantsList');
-    const hasValidImage = image && image.startsWith('http') && !image.includes('vercel.app');
-    const row = document.createElement('div');
-    row.className = 'variant-row';
-    row.style.border = inStock ? '2px solid #22c55e' : '2px solid #e2e8f0';
-    row.innerHTML = `
-        <button class="variant-up" title="Вверх">↑</button>
-        <button class="variant-down" title="Вниз">↓</button>
-        <input type="text" class="variant-label" placeholder="Название" value="${label}" style="flex:1.5;min-width:80px;">
-        <input type="number" class="variant-price" placeholder="Цена" value="${price}" style="width:50px;max-width:50px;min-width:50px;flex:none;">
-        <input type="file" class="variant-image-file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
-        <button class="variant-image-btn" title="Загрузить фото">🖼️</button>
-        <button class="variant-image-remove" title="Удалить фото" style="display:${hasValidImage ? 'inline-block' : 'none'};background:#ef4444;color:white;border:none;width:22px;height:22px;border-radius:4px;cursor:pointer;font-size:0.6rem;flex-shrink:0;padding:0;">✕</button>
-        <img class="variant-preview" src="${hasValidImage ? image : ''}" data-saved-url="${hasValidImage ? image : ''}" style="width:30px;height:30px;object-fit:cover;border-radius:4px;display:${hasValidImage ? 'block' : 'none'};flex-shrink:0;" onerror="this.style.display='none'">
-        <input type="text" class="variant-description" placeholder="Описание" value="${description}" style="flex:2.5;min-width:100px;">
-        <label class="variant-stock-label" title="В наличии" style="flex-shrink:0;">
-            <input type="checkbox" class="variant-stock" ${inStock ? 'checked' : ''}>
-        </label>
-        <button class="remove-variant" style="flex-shrink:0;">✕</button>
-    `;
-    
-    row.querySelector('.remove-variant').addEventListener('click', async () => {
-        if (confirm('Удалить этот вариант?')) {
-            const preview = row.querySelector('.variant-preview');
-            const oldImage = preview.getAttribute('data-saved-url') || preview.src;
-            if (oldImage && !oldImage.startsWith('blob:') && !oldImage.includes('placehold.co')) {
-                await fetch('/api/delete-image', {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify({ imageUrl: oldImage })
-                });
-            }
-            row.remove();
-        }
-    });
-    row.querySelector('.variant-up').addEventListener('click', () => {
-        const prev = row.previousElementSibling;
-        if (prev && prev.classList.contains('variant-row')) container.insertBefore(row, prev);
-    });
-    row.querySelector('.variant-down').addEventListener('click', () => {
-        const next = row.nextElementSibling;
-        if (next && next.classList.contains('variant-row')) container.insertBefore(next, row);
-    });
-    row.querySelector('.variant-image-btn').addEventListener('click', () => row.querySelector('.variant-image-file').click());
-    row.querySelector('.variant-image-file').addEventListener('change', function() {
-        const file = this.files[0];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            const preview = row.querySelector('.variant-preview');
-            preview.src = url;
-            preview.style.display = 'block';
-            preview.setAttribute('data-saved-url', '');
-            row.querySelector('.variant-image-remove').style.display = 'inline-block';
-        }
-    });
-    row.querySelector('.variant-image-remove').addEventListener('click', async () => {
-        if (confirm('Удалить фото варианта?')) {
-            const preview = row.querySelector('.variant-preview');
-            const oldImage = preview.getAttribute('data-saved-url') || preview.src;
-            
-            preview.src = '';
-            preview.style.display = 'none';
-            preview.setAttribute('data-saved-url', '');
-            row.querySelector('.variant-image-file').value = '';
-            row.querySelector('.variant-image-remove').style.display = 'none';
-            
-            if (oldImage && !oldImage.startsWith('blob:')) {
-                await fetch('/api/delete-image', {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify({ imageUrl: oldImage })
-                });
-            }
-        }
-    });
-    row.querySelector('.variant-stock').addEventListener('change', function() {
-        row.style.border = this.checked ? '2px solid #22c55e' : '2px solid #e2e8f0';
-    });
-    
-    container.appendChild(row);
+let isSaving = false;
+let currentImages = [];
+
+function getAuthHeaders() {
+    const token = localStorage.getItem('authToken');
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
 }
 
-async function uploadToCloudinary(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'chsu_merch');
-    const res = await fetch('https://api.cloudinary.com/v1_1/sd0mazc2/image/upload', { method: 'POST', body: formData });
-    if (res.ok) {
-        const data = await res.json();
-        return data.secure_url;
+function showProductModal(product) {
+    editingProductId = product ? product.id : null;
+    document.getElementById('productModalTitle').textContent = product ? 'Редактировать товар' : 'Добавить товар';
+    document.getElementById('productId').value = product ? product.id : '';
+    document.getElementById('productName').value = product ? product.name : '';
+    document.getElementById('productCategoryInput').value = product ? (product.category || '') : '';
+    document.getElementById('productPrice').value = product && product.price ? product.price : '';
+    document.getElementById('productDescription').value = product ? (product.description || '') : '';
+    document.getElementById('productInStock').checked = product ? (product.inStock !== false) : true;
+    document.getElementById('imageError').textContent = '';
+    document.getElementById('productImageFile').value = '';
+
+    currentImages = [];
+    const imagesPreview = document.getElementById('imagesPreview');
+    imagesPreview.innerHTML = '';
+
+    if (product) {
+        const images = product.images || (product.image ? [product.image] : []);
+        currentImages = images.filter(img => img && img !== 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image');
+        renderImagePreviews();
     }
-    return null;
+
+    const removeBtn = document.getElementById('removeMainImage');
+    if (removeBtn) removeBtn.style.display = currentImages.length > 0 ? 'inline-block' : 'none';
+
+    document.getElementById('variantsList').innerHTML = '';
+    if (product && product.variants && Array.isArray(product.variants)) {
+        product.variants.forEach(v => addVariantRow(v.label, v.price, v.inStock !== false, v.image || '', v.description || ''));
+    }
+
+    document.getElementById('productModal').classList.add('show');
 }
 
-async function getVariantsFromForm() {
-    const rows = document.querySelectorAll('.variant-row');
-    const variants = [];
-    for (const row of rows) {
-        const label = row.querySelector('.variant-label').value.trim();
-        const price = parseInt(row.querySelector('.variant-price').value);
-        const safePrice = isNaN(price) || price < 0 ? 0 : price;
-        const description = row.querySelector('.variant-description').value.trim();
-        const inStock = row.querySelector('.variant-stock').checked;
-        const previewImg = row.querySelector('.variant-preview');
-        let imageUrl = previewImg.getAttribute('data-saved-url') || '';
-        const fileInput = row.querySelector('.variant-image-file');
-        
-        if (label && !isNaN(price)) {
-            if (fileInput.files.length > 0) {
-                const uploadedUrl = await uploadToCloudinary(fileInput.files[0]);
-                if (uploadedUrl) imageUrl = uploadedUrl;
-            }
-            if (imageUrl && imageUrl.startsWith('blob:')) imageUrl = '';
-            if (imageUrl && imageUrl.includes('vercel.app')) imageUrl = '';
-            variants.push({ label, price: safePrice, inStock, image: imageUrl || '', description });
-        }
+function renderImagePreviews() {
+    const container = document.getElementById('imagesPreview');
+    container.innerHTML = currentImages.map((img, i) => `
+        <div style="position:relative;display:inline-block;">
+            <img src="${img}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">
+            <button class="remove-image-btn" data-index="${i}" style="position:absolute;top:-5px;right:-5px;background:#ef4444;color:white;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:0.6rem;">✕</button>
+            <div style="display:flex;justify-content:center;gap:2px;margin-top:2px;">
+                <button class="move-left-btn" data-index="${i}" ${i === 0 ? 'disabled' : ''} style="background:#64748b;color:white;border:none;border-radius:3px;cursor:pointer;font-size:0.5rem;padding:1px 4px;">◀</button>
+                <button class="move-right-btn" data-index="${i}" ${i === currentImages.length - 1 ? 'disabled' : ''} style="background:#64748b;color:white;border:none;border-radius:3px;cursor:pointer;font-size:0.5rem;padding:1px 4px;">▶</button>
+            </div>
+        </div>
+    `).join('');
+
+    if (currentImages.length < 5) {
+        const label = document.createElement('label');
+        label.style.cssText = 'width:80px;height:80px;border:2px dashed #e31e24;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#e31e24;font-size:1.5rem;';
+        label.innerHTML = '+<input type="file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" multiple>';
+        label.querySelector('input').addEventListener('change', function() {
+            addMoreImages(this);
+        });
+        container.appendChild(label);
     }
-    return variants.length > 0 ? variants : null;
+
+    container.querySelectorAll('.remove-image-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            if (confirm('Удалить это фото?')) {
+                await removeImage(parseInt(this.dataset.index));
+            }
+        });
+    });
+
+    container.querySelectorAll('.move-left-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = parseInt(this.dataset.index);
+            if (index > 0) {
+                [currentImages[index], currentImages[index - 1]] = [currentImages[index - 1], currentImages[index]];
+                renderImagePreviews();
+            }
+        });
+    });
+
+    container.querySelectorAll('.move-right-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = parseInt(this.dataset.index);
+            if (index < currentImages.length - 1) {
+                [currentImages[index], currentImages[index + 1]] = [currentImages[index + 1], currentImages[index]];
+                renderImagePreviews();
+            }
+        });
+    });
+
+    document.getElementById('removeMainImage').style.display = currentImages.length > 0 ? 'inline-block' : 'none';
+}
+
+async function removeImage(index) {
+    const img = currentImages[index];
+    if (img && !img.startsWith('blob:')) {
+        await fetch('/api/delete-image', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ imageUrl: img })
+        });
+    }
+    currentImages.splice(index, 1);
+    renderImagePreviews();
+}
+
+function addMoreImages(input) {
+    const files = input.files;
+    for (const file of files) {
+        if (currentImages.length >= 5) break;
+        currentImages.push(URL.createObjectURL(file));
+    }
+    renderImagePreviews();
+    input.value = '';
+}
+
+function hideProductModal() {
+    document.getElementById('productModal').classList.remove('show');
+    editingProductId = null;
+}
+
+async function saveProduct() {
+    if (isSaving) return;
+    isSaving = true;
+
+    const saveBtn = document.getElementById('productSave');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Сохранение...';
+
+    try {
+        const id = document.getElementById('productId').value;
+        const name = document.getElementById('productName').value.trim();
+        const category = document.getElementById('productCategoryInput').value.trim() || 'Без категории';
+        const description = document.getElementById('productDescription').value.trim();
+        const inStock = document.getElementById('productInStock').checked;
+        const variants = await getVariantsFromForm();
+        let price = parseInt(document.getElementById('productPrice').value);
+
+        if (!name) { alert('Введите название товара'); return; }
+        if (!variants && isNaN(price)) { alert('Введите цену или добавьте варианты'); return; }
+
+        if (isNaN(price) || price < 0) price = 0;
+        if (variants && variants.length > 0) price = null;
+        if (!price && (!variants || variants.length === 0)) price = 0;
+
+        for (let i = 0; i < currentImages.length; i++) {
+            if (currentImages[i].startsWith('blob:')) {
+                const response = await fetch(currentImages[i]);
+                const blob = await response.blob();
+                const file = new File([blob], 'image.jpg', { type: blob.type });
+                const uploadedUrl = await uploadToServer(file);
+                if (uploadedUrl) currentImages[i] = uploadedUrl;
+            }
+        }
+
+        const imageInput = document.getElementById('productImageFile');
+        if (imageInput.files.length > 0) {
+            for (const file of imageInput.files) {
+                const uploadedUrl = await uploadToServer(file);
+                if (uploadedUrl) currentImages.push(uploadedUrl);
+            }
+        }
+
+        const cleanImages = currentImages.filter(img => img && !img.startsWith('blob:'));
+        const images = cleanImages.length > 0 ? cleanImages : [];
+        const mainImage = images.length > 0 ? images[0] : 'https://placehold.co/400x400/e9eef3/8b9cb0?text=No+Image';
+
+        const productData = { id: id || name.toLowerCase().replace(/[^a-zа-я0-9]/g, '-') + '-' + Date.now(), name, category, image: mainImage, images, description, inStock, price, variants };
+
+        await fetch('/api/products', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(productData)
+        });
+
+        await loadProductsFromDB();
+        hideProductModal();
+        updateCategoryButtons();
+        renderProducts(products);
+    } finally {
+        isSaving = false;
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Сохранить';
+    }
+}
+
+async function deleteProduct(id) {
+    if (confirm('Удалить товар навсегда?')) {
+        const product = products.find(p => p.id === id);
+        if (product) {
+            const allImages = product.images || (product.image ? [product.image] : []);
+            for (const img of allImages) {
+                if (img && !img.includes('placehold.co') && !img.startsWith('blob:')) {
+                    await fetch('/api/delete-image', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ imageUrl: img })
+                    });
+                }
+            }
+            if (product.variants && Array.isArray(product.variants)) {
+                for (const v of product.variants) {
+                    if (v.image && !v.image.includes('placehold.co') && !v.image.startsWith('blob:')) {
+                        await fetch('/api/delete-image', {
+                            method: 'POST',
+                            headers: getAuthHeaders(),
+                            body: JSON.stringify({ imageUrl: v.image })
+                        });
+                    }
+                }
+            }
+        }
+        await fetch(`/api/products/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+        await loadProductsFromDB();
+        updateCategoryButtons();
+        renderProducts(products);
+    }
+}
+
+async function archiveProduct(id) {
+    await fetch(`/api/products/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ archived: true, inStock: false })
+    });
+    await loadProductsFromDB();
+    renderProducts(products);
+}
+
+async function restoreProduct(id) {
+    await fetch(`/api/products/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ archived: false })
+    });
+    await loadProductsFromDB();
+    renderProducts(products);
+}
+
+function toggleArchived() {
+    showArchived = !showArchived;
+    renderProducts(products);
+}
+
+function initAdminProducts() {
+    document.getElementById('productSave').addEventListener('click', saveProduct);
+    document.getElementById('productCancel').addEventListener('click', hideProductModal);
+    document.getElementById('addVariant').addEventListener('click', () => addVariantRow());
+
+    document.getElementById('productImageFile').addEventListener('change', function() {
+        const files = this.files;
+        if (files.length > 0) {
+            document.getElementById('imageError').textContent = '';
+            for (const file of files) {
+                if (!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)) {
+                    document.getElementById('imageError').textContent = 'Допустимые форматы: JPG, PNG, WEBP, GIF';
+                    return;
+                }
+                if (file.size > 10 * 1024 * 1024) {
+                    document.getElementById('imageError').textContent = 'Максимальный размер файла: 10 МБ';
+                    return;
+                }
+                currentImages.push(URL.createObjectURL(file));
+            }
+            renderImagePreviews();
+            this.value = '';
+        }
+    });
+
+    document.getElementById('removeMainImage').addEventListener('click', async function() {
+        if (confirm('Удалить ВСЕ фото?')) {
+            for (const img of currentImages) {
+                if (img && !img.startsWith('blob:')) {
+                    await fetch('/api/delete-image', {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ imageUrl: img })
+                    });
+                }
+            }
+            currentImages = [];
+            renderImagePreviews();
+        }
+    });
 }
