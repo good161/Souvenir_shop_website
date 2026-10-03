@@ -1,7 +1,7 @@
 (function() {
     const toast = document.getElementById('toastMsg');
     const PROTECTED_CARDS = ['merch', 'official-channels', 'it-services', 'bots'];
-    
+
     function showMessage(text, duration = 2300) {
         if (!toast) return;
         toast.textContent = text;
@@ -40,10 +40,10 @@
                     <span class="icon-label">${escapeHtml(c.name)}</span>
                 </a>
             `).join('');
-        } catch (err) { 
+        } catch (err) {
             console.error('Channels load error:', err);
             const grid = document.getElementById('channelsGrid');
-            if (grid) grid.innerHTML = '<span style="color:#94a3b8;">Ошибка загрузки</span>'; 
+            if (grid) grid.innerHTML = '<span style="color:#94a3b8;">Ошибка загрузки</span>';
         }
     }
 
@@ -54,12 +54,12 @@
             const channels = await res.json();
             const list = document.getElementById('channelsEditList');
             if (!list) return;
-            
+
             if (channels.length === 0) {
                 list.innerHTML = '<span style="color:#94a3b8;">Нет каналов</span>';
                 return;
             }
-            
+
             list.innerHTML = channels.map((c, i) => `
                 <div style="display:flex;gap:0.3rem;align-items:center;padding:0.5rem;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;">
                     <button onclick="moveChannel(${c.id}, ${i}, -1)" ${i === 0 ? 'disabled' : ''} style="background:#94a3b8;color:white;border:none;border-radius:4px;cursor:pointer;padding:0.2rem 0.4rem;font-size:0.7rem;">▲</button>
@@ -104,11 +104,11 @@
     async function loadCards() {
         const grid = document.getElementById('servicesGrid');
         if (!grid) return;
-        
+
         try {
             const res = await fetch('/api/cards');
             console.log('Cards response status:', res.status);
-            
+
             if (!res.ok) {
                 let errorText = '';
                 try { errorText = await res.text(); } catch(e) {}
@@ -120,14 +120,14 @@
                     </div>`;
                 return;
             }
-            
+
             const cards = await res.json();
             if (!Array.isArray(cards)) {
                 console.error('Cards is not array:', cards);
                 grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:#94a3b8;">Некорректный формат данных</div>';
                 return;
             }
-            
+
             grid.innerHTML = cards.map(card => {
                 if (card.id === 'official-channels') {
                     return `
@@ -150,17 +150,22 @@
                         </div>`;
                 }
             }).join('');
-            
+
             loadChannels();
             bindCardEvents();
-            
+
             if (typeof updateAdminUI === 'function') {
                 updateAdminUI();
             }
-            
+
             const showAddCardModal = document.getElementById('showAddCardModal');
             if (showAddCardModal) {
-                showAddCardModal.style.display = localStorage.getItem('isAdmin') === 'true' ? 'flex' : 'none';
+                const storedIsAdmin = localStorage.getItem('isAdmin') === 'true';
+                const role = localStorage.getItem('adminRole') || '';
+                let perms = { main: false, merch: false };
+                try { perms = JSON.parse(localStorage.getItem('adminPermissions') || '{"main":false,"merch":false}'); } catch (e) {}
+                const canMain = storedIsAdmin && (role === 'Protoadmin' || perms.main);
+                showAddCardModal.style.display = canMain ? 'flex' : 'none';
             }
         } catch (err) {
             console.error('Error loading cards:', err);
@@ -209,12 +214,12 @@
     window.openCardEditor = function(cardId) {
         const card = document.querySelector(`[data-service="${cardId}"]`);
         if (!card) return;
-        
+
         const title = card.querySelector('.card-title');
         const description = card.querySelector('.card-description');
-        
+
         document.getElementById('editCardId').value = cardId;
-        
+
         let titleText = '';
         if (title) {
             for (const node of title.childNodes) {
@@ -223,28 +228,28 @@
                 }
             }
         }
-        
+
         const nameField = document.getElementById('editCardName');
         const descField = document.getElementById('editCardDescription');
-        
+
         nameField.value = titleText.trim();
         descField.value = description ? description.textContent : '';
-        
+
         setTimeout(() => {
             autoResizeTextarea(nameField);
             autoResizeTextarea(descField);
         }, 50);
-        
+
         const channelsSection = document.getElementById('channelsEditSection');
         const deleteBtn = document.getElementById('deleteCardBtn');
-        
+
         if (cardId === 'official-channels') {
             channelsSection.style.display = 'block';
             loadChannelsForEdit();
         } else {
             channelsSection.style.display = 'none';
         }
-        
+
         if (deleteBtn) {
             if (PROTECTED_CARDS.includes(cardId)) {
                 deleteBtn.style.display = 'none';
@@ -252,7 +257,7 @@
                 deleteBtn.style.display = 'inline-block';
             }
         }
-        
+
         document.getElementById('editCardModal').style.display = 'flex';
     };
 
@@ -264,21 +269,21 @@
         document.getElementById('editCardModal').style.display = 'none';
         loadCards();
     });
-    
+
     document.getElementById('closeEditCardBtn').addEventListener('click', () => {
         document.getElementById('editCardModal').style.display = 'none';
     });
 
     document.getElementById('deleteCardBtn').addEventListener('click', async () => {
         const id = document.getElementById('editCardId').value;
-        
+
         if (PROTECTED_CARDS.includes(id)) {
             showMessage('Эту карточку удалить нельзя');
             return;
         }
-        
+
         if (!confirm('Удалить карточку?')) return;
-        
+
         try {
             const res = await fetch(`/api/cards/${id}`, {
                 method: 'DELETE',
@@ -297,7 +302,7 @@
         const name = document.getElementById('newChannelName').value.trim();
         const url = document.getElementById('newChannelUrl').value.trim();
         if (!name || !url) return alert('Заполните название и URL');
-        await fetch('/api/channels', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ name, url, icon: '🌐' }) });
+        await fetch('/api/channels', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ name, url }) });
         document.getElementById('newChannelName').value = '';
         document.getElementById('newChannelUrl').value = '';
         loadChannelsForEdit();
@@ -317,12 +322,12 @@
     document.getElementById('createCardBtn').addEventListener('click', async () => {
         const name = document.getElementById('newCardName').value.trim();
         const description = document.getElementById('newCardDescription').value.trim();
-        
+
         if (!name) return alert('Введите название карточки');
-        
+
         const res = await fetch('/api/cards');
         const cards = await res.json();
-        
+
         let maxNum = 0;
         cards.forEach(card => {
             const match = card.id.match(/^card-(\d+)$/);
@@ -330,13 +335,13 @@
                 maxNum = Math.max(maxNum, parseInt(match[1]));
             }
         });
-        
+
         const maxOrder = cards.reduce((max, card) => Math.max(max, card.display_order || 0), 0);
-        
+
         const newId = `card-${maxNum + 1}`;
         const url = `services.html?id=${newId}`;
         const displayOrder = maxOrder + 1;
-        
+
         try {
             const createRes = await fetch('/api/cards', {
                 method: 'POST',
